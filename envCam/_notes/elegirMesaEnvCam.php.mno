@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_Mesas" value="name:idMesa;datatype:int,name:nombreMesa;datatype:string,name:estadoMesa;datatype:int" />
+</info>

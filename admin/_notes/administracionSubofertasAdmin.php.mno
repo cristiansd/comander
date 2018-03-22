@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_submenu" value="name:idSubmenu;datatype:int,name:nombreSubmenu;datatype:string,name:idMenuSubmenu;datatype:int,name:estadoSubmenu;datatype:int" />
+	<infoitem key="UD_suboferta" value="name:idOferta;datatype:int,name:nombreOferta;datatype:string,name:precioOferta;datatype:real,name:estadoOferta;datatype:int" />
+</info>

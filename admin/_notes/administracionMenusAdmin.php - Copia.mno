@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_menu" value="name:idMenu;datatype:int,name:nombreMenu;datatype:string,name:imagenMenu;datatype:string,name:precioMenu;datatype:real,name:estadoMenu;datatype:int" />
+</info>

@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_productos" value="name:idProducto;datatype:int,name:nombreProducto;datatype:string,name:idCategoriaProducto;datatype:int,name:idSubcategoriaProducto;datatype:int,name:idOfertaProducto;datatype:int,name:idSubofertaPedido;datatype:int,name:imagenProducto;datatype:string,name:precioVentaProducto;datatype:real,name:precioCompraProducto;datatype:real,name:estadoProducto;datatype:int,name:stockProducto;datatype:real,name:descripcionProducto;datatype:string" />
+	<infoitem key="UD_subcategorias" value="name:idSubcategoria;datatype:int,name:nombreSubcategoria;datatype:string,name:idCategoriaSubcategoria;datatype:int,name:imagenSubcategoria;datatype:string,name:estadoSubcategoria;datatype:int" />
+	<infoitem key="UD_productosMenu" value="name:idProductosmenu;datatype:int,name:nombreProductosmenu;datatype:string,name:idMenuProductosmenu;datatype:int,name:idSubmenuProductosmenu;datatype:int,name:estadoProductosmenu;datatype:int" />
+	<infoitem key="UD_productoMenu" value="name:idProductosmenu;datatype:int,name:idProductoProductosmenu;datatype:int,name:imagenProductoProductosmenu;datatype:string,name:nombreProductosmenu;datatype:string,name:idMenuProductosmenu;datatype:int,name:idSubmenuProductosmenu;datatype:int,name:estadoProductosmenu;datatype:int" />
+</info>

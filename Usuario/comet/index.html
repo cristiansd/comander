@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Comet demo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="prototype.js"></script>
+  </head>
+  <body>
+
+<div id="content">
+</div>
+
+<p>
+  <form action="" method="get" onsubmit="comet.doRequest($('word').value);$('word').value='';return false;">
+    <input type="text" name="word" id="word" value="" />
+    <input type="submit" name="submit" value="Send" />
+  </form>
+</p>
+
+<script type="text/javascript">
+var Comet = Class.create();
+
+Comet.prototype = {
+
+  timestamp: 0,
+  url: './backend.php',
+  noerror: true,
+
+  initialize: function() { },
+
+  connect: function()
+  {
+	  var dato2 = "sin valor";
+    this.ajax = new Ajax.Request(this.url, {
+      method: 'get',
+      parameters: { 'timestamp' : this.timestamp,'dato2' : dato2 },
+      onSuccess: function(transport) {
+        // manejar la respuesta del servidor
+        var response = transport.responseText.evalJSON();
+        this.comet.timestamp = response['timestamp'];
+        this.comet.handleResponse(response);
+        this.comet.noerror = true;
+      },
+      onComplete: function(transport) {
+        // enviar una nueva solicitud de ajax cuando finalice esta solicitud
+        if (!this.comet.noerror)
+          // si se produce un problema de conexión , intente volver a conectar cada 5 segundos
+          setTimeout(function(){ comet.connect() }, 5000); 
+        else
+          this.comet.connect();
+        this.comet.noerror = false;
+      }
+    });
+    this.ajax.comet = this;
+  },
+
+  disconnect: function()
+  {
+  },
+
+  handleResponse: function(response)//recibimos la respuesta en tiempo real
+  {
+    $('content').innerHTML = '<div>' + response['msg'] +'</div>';
+  },
+
+  doRequest: function(request)//enviar el nuevo mensaje
+  {
+	  //var dato2 = document.getElementById('texto2').value;//segundo parametro
+
+    new Ajax.Request(this.url, {
+      method: 'get',
+      parameters: { 'msg' : request }
+    });
+  }
+  
+}
+var comet = new Comet();
+comet.connect();//instancia un objeto
+</script>
+
+</body>
+</html>
+
+

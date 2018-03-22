@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_submenus" value="name:idSubmenu;datatype:int,name:nombreSubmenu;datatype:string,name:idMensuSubmenu;datatype:int,name:imagenSubmenu;datatype:string,name:estadoSubmenu;datatype:int" />
+	<infoitem key="UD_submenu" value="name:idSubmenu;datatype:int,name:nombreSubmenu;datatype:string,name:idMenuSubmenu;datatype:int,name:estadoSubmenu;datatype:int" />
+</info>

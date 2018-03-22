@@ -1,0 +1,26 @@
+modificacion x CRISTIAN dia 16/10/16
+
+=> BD _coman
+    
+    =>Tabla ProductosMenu
+        -Se añade columna "estadoProductoMenu"
+
+    =>Tabla Productos
+        -Se añade columna "alergenosProducto"
+        -Se añade columna "nutricionalProducto"
+
+******************************************************************************************
+modificacion x PEDRO dia 30/10/16
+
+    =>Tabla usuarios
+        -Se añade columna "estadoNotificacionUsuario"
+         y se modifica funcion sending_push para enviar notificaciones solo mandando
+         el parametro de usuario (camarero)
+
+******************************************************************************************
+modificacion x CRISTIAN dia 30/10/16
+
+    =>Tabla pedidos
+        -Se cambia columna IdUsuarioPedido de la tabla pedidos a NULL predeterminado para poder realizar pedidos el cliente final que todavia no sabe el camarero
+        -Se cambia columna IdUsuarioComanda de la tabla comandas a NULL predeterminado para poder realizar pedidos el cliente final que todavia no sabe el camarero
+        -Se inserta columna idPedido en la tabla notificaciones con valor predeterminado NULL para facilitar la asignacion de camarero por parte del camarero.

@@ -1,0 +1,9 @@
+App Usuario=>
+    -cuando abandonas la sesion y vuelves a entrar da error en los eventos
+    -darle funcionalidad al boton de llamar camarero
+        funcionalidad:
+            -cuando todavia no se ha pagado se envia notificacion a todos los camareros
+            -cuando se paga se envia notificacaion a todos los camareros para que coja la mesa el que quiera
+            -cunado ya hemos pagado y tenemos asignado un camarero solo le enviamos a este.
+    -Comprobar tipo y calidad e conexion a internet
+

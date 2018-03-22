@@ -1,0 +1,403 @@
+@charset "iso-8859-1";
+body {
+        
+        width:100%;
+	font: 100%/1.4 Verdana, Arial, Helvetica, sans-serif;	
+	margin: 0;
+	padding: 0;
+	color: #000;
+}
+
+/* ~~ Selectores de elemento/etiqueta ~~ */
+ul, ol, dl { /* Debido a las diferencias existentes entre los navegadores, es recomendable no añadir relleno ni márgenes en las listas. Para lograr coherencia, puede especificar las cantidades deseadas aquí o en los elementos de lista (LI, DT, DD) que contienen. Recuerde que lo que haga aquí se aplicará en cascada en la lista .nav, a no ser que escriba un selector más específico. */
+	padding: 0;
+	margin: 0;
+}
+h1, h2, h3, h4, h5, h6, p {
+	margin-top: 0;	 /* la eliminación del margen superior resuelve un problema que origina que los márgenes escapen de la etiqueta div contenedora. El margen inferior restante lo mantendrá separado de los elementos de que le sigan. */
+	padding-right: 15px;
+	/*padding-left: 15px; *//* la adición de relleno a los lados del elemento dentro de las divs, en lugar de en las divs propiamente dichas, elimina todas las matemáticas de modelo de cuadro. Una div anidada con relleno lateral también puede usarse como método alternativo. */
+}
+a img { /* este selector elimina el borde azul predeterminado que se muestra en algunos navegadores alrededor de una imagen cuando está rodeada por un vínculo */
+	border: none;
+}
+
+/* ~~ La aplicación de estilo a los vínculos del sitio debe permanecer en este orden (incluido el grupo de selectores que crea el efecto hover -paso por encima-). ~~ */
+a:link {
+	color: #42413C;
+	text-decoration: underline; /* a no ser que aplique estilos a los vínculos para que tengan un aspecto muy exclusivo, es recomendable proporcionar subrayados para facilitar una identificación visual rápida */
+}
+a:visited {
+	color: #6E6C64;
+	text-decoration: underline;
+}
+a:hover, a:active, a:focus { /* este grupo de selectores proporcionará a un usuario que navegue mediante el teclado la misma experiencia de hover (paso por encima) que experimenta un usuario que emplea un ratón. */
+	text-decoration: none;
+}
+
+/* ~~ este contenedor de anchura fija rodea a las demás divs ~~ */
+.container {
+	background-color: #EAE7D7;
+	/*background-color: #FFF; /* el valor automático de los lados, unido a la anchura, centra el diseño */
+	margin-top: 0;
+	margin-right: auto;
+	margin-bottom: 0;
+	margin-left: auto;
+	
+}
+
+/* ~~ no se asigna una anchura al encabezado. Se extenderá por toda la anchura del diseño. Contiene un marcador de posición de imagen que debe sustituirse por su propio logotipo vinculado ~~ */
+.subheader {
+	width: 100%;
+	height: 150px;	
+	background-image: url(../imagenes/adminImages/fondoCabecera.jpg);
+	background-repeat: repeat-x;	
+}
+.header {
+	width: 100%;
+	height: 150px;
+	margin: 0 auto;
+	
+}
+.headerInteriorLogo {
+	width: 160px;
+	height: 130px;
+	float: left;
+	margin-top: 10px;
+	margin-left: 20px;
+}
+.headerInteriorTitulo {
+	width: 720px;
+	height: 130px;
+	padding-left: 190px;
+	padding-top: 10px;
+	/*margin-top: 10px;*/
+}
+.imagenDetalleProducto{
+	height:300px;
+	}
+	
+.textoDetalleProducto{}
+
+/* ~~ Estas son las columnas para el diseño. ~~ 
+
+1) El relleno sólo se sitúa en la parte superior y/o inferior de las divs. Los elementos situados dentro de estas divs tienen relleno a los lados. Esto le ahorra las "matemáticas de modelo de cuadro". Recuerde que si añade relleno o borde lateral a la div propiamente dicha, éste se añadirá a la anchura que defina para crear la anchura *total*. También puede optar por eliminar el relleno del elemento en la div y colocar una segunda div dentro de ésta sin anchura y el relleno necesario para el diseño deseado. También puede optar por eliminar el relleno del elemento en la div y colocar una segunda div dentro de ésta sin anchura y el relleno necesario para el diseño deseado.
+
+2) No se asigna margen a las columnas, ya que todas ellas son flotantes. Si es preciso añadir un margen, evite colocarlo en el lado hacia el que se produce la flotación (por ejemplo: un margen derecho en una div configurada para flotar hacia la derecha). En muchas ocasiones, puede usarse relleno como alternativa. En el caso de divs para las que deba incumplirse esta regla, deberá añadir una declaración "display:inline" a la regla de la div para evitar un error que provoca que algunas versiones de Internet Explorer dupliquen el margen.
+
+3) Dado que las clases se pueden usar varias veces en un documento (y que también se pueden aplicar varias clases a un elemento), se ha asignado a las columnas nombres de clases en lugar de ID. Por ejemplo, dos divs de barra lateral podrían apilarse si fuera necesario. Si lo prefiere, éstas pueden cambiarse a ID fácilmente, siempre y cuando las utilice una sola vez por documento.
+
+4) Si prefiere que la navegación esté a la derecha en lugar de a la izquierda, simplemente haga que estas columnas floten en dirección opuesta (todas a la derecha en lugar de todas a la izquierda) y éstas se representarán en orden inverso. No es necesario mover las divs por el código fuente HTML.
+
+*/
+.subcontenedor {	
+	background-color: #FFF;
+	margin: 0 auto;
+	width: 100%;
+	
+
+}
+.content {
+	background-color: #FFF;
+	width:100%;
+	height:100%;
+	padding-top:10px;
+	margin-right:auto;
+	margin-left:auto;
+	padding-left: 230px;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 16px;
+	color: #666;
+	font-style: normal;
+	
+}
+.resultadoproductos{
+	width: 1006.8px;
+	height:650px;
+	overflow:auto;
+	
+}
+.resultadoproductosConAnadir{
+	
+	overflow:auto;
+        padding-left: 21.6px;
+        margin: 0 auto; 
+	
+}
+.no-seleccionable {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none; 
+}
+.producto{
+	width: 320px;
+	float: left;	
+	margin-right:15.6px;	
+	margin-bottom:15.6px;
+	background-image: url(../imagenes/adminImages/fondoProducto.png);
+	height: 150px;
+}
+
+.textoproductoicons
+{
+	
+	float: left;
+	height: 20px;
+	width: 150px;
+        margin-top: 10px;
+}
+.textoproductoiconsSinimagen
+{
+	padding-top:15px;
+	padding-left:95px;
+	height: 20px;
+	width: 130px;
+}
+   
+
+.textoproductoiconseditar
+{
+	margin-left:30px;
+	float: left;
+	height: 20px;
+	width: 20px;
+}
+
+.textoproductoiconseliminar
+{
+	margin-left:30px;
+	float: left;
+	height: 20px;
+	width: 20px;
+}
+.textoproductoiconsAnadir
+{       
+        
+	float: left;
+	height: 20px;
+	width: 20px;
+}
+.botonAnadir{
+	
+	
+	margin-right: 10px;
+	margin-bottom: 10px;
+	}
+	
+.botonAnadirTabla{
+	width: 110px;
+	height: 32px;
+	margin-bottom: 10px;
+	}
+	.botonMapa{
+	width: 110px;
+	height: 32px;
+	margin-bottom: 10px;
+	margin-left:20;
+	}
+		
+.fotoproducto
+{
+	float: left;
+	padding-top:15px;
+	padding-left:15px;
+	height: 120px;
+	width: 120px;
+}
+.textoproducto
+{
+	padding-top:15px;
+	padding-left:10px;
+	float: left;
+	height: 100px;
+	width: 170px;
+}
+.textoproductoSinimagen
+{
+	padding-top:20px;
+	height: 130px;
+}
+
+.sidebar1 {
+	float: left;
+        height:100%;
+	width: 230px;
+	padding-left: 10px;
+        padding-right: 10px;
+}
+.textoVentana{
+	height:83px;}
+
+.contenido {
+	width:100%;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 12px;
+	color: #999;
+	font-style: normal;
+	}	
+	.contenidoConAnadir {
+	
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 12px;
+	color: #999;
+	font-style: normal;
+	}	
+	.contenidoFormulario{
+	width: 500px;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 12px;
+	color: #333;
+	font-style: normal;
+	background-color: #CCC;
+	}	
+	.botonesFormulario{
+	height:30px;
+	width:150px;
+	padding-left:80px;
+	padding-top:10px;
+	}	
+	.botonesFormularioCategoria{
+	height:30px;
+	width:150px;
+	padding-left:100px;
+	padding-top:10px;
+	}	
+	.colorLetraActivo{
+	color: #0C0;
+	}
+	.colorLetraInactivo{
+	color: #F00;
+	}
+
+
+/* ~~ Este selector agrupado da espacio a las listas del área de .content ~~ */
+.content ul, .content ol { 
+	padding: 0 15px 15px 40px; 
+	/* este relleno reproduce en espejo el relleno derecho de la regla de encabezados y de párrafo incluida más arriba. El relleno se ha colocado en la parte inferior para que el espacio existente entre otros elementos de la lista y a la izquierda cree la sangría. Estos pueden ajustarse como se desee. */
+}
+.admin {
+	margin-top: 10px;
+	margin-left: 10px;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 25px;
+	color: #666;
+	font-style: normal;
+	}
+
+/* ~~ Los estilos de lista de navegación (pueden eliminarse si opta por usar un menú desplegable predefinido como el de Spry) ~~ */
+ul.nav {
+	list-style: none; /* esto elimina el marcador de lista */
+	border-top: 1px solid #666; /* esto crea el borde superior de los vínculos (los demás se sitúan usando un borde inferior en el LI) */
+	margin-bottom: 15px; /* esto crea el espacio entre la navegación en el contenido situado debajo */
+	margin-top: 20px;
+}
+ul.nav li {
+	border-bottom: 1px solid #666; /* esto crea la separación de los botones */
+	background-color: #666;
+}
+ul.nav a, ul.nav a:visited { /* al agrupar estos selectores, se asegurará de que los vínculos mantengan el aspecto de botón incluso después de haber sido visitados */
+	padding: 5px 5px 5px 15px;
+	display: block; /* esto asigna propiedades de bloque al vínculo, lo que provoca que llene todo el LI que lo contiene. Esto provoca que toda el área reaccione a un clic de ratón. */
+	/* width: 160px;  esta anchura hace que se pueda hacer clic en todo el botón para IE6. Puede eliminarse si no es necesario proporcionar compatibilidad con IE6. Calcule la anchura adecuada restando el relleno de este vínculo de la anchura del contenedor de barra lateral. */
+	text-decoration: none;
+	background-color: #CCCCCC;
+}
+ul.nav a:hover, ul.nav a:active, ul.nav a:focus { /* esto cambia el color de fondo y del texto tanto para usuarios que naveguen con ratón como para los que lo hagan con teclado */
+	background-color: #999999;
+	color: #FFF;
+}
+
+/* ~~ El pie de página ~~ */
+/*.footer {
+	width:100%;
+	height: 20px;	}
+		/*position: relative;/* esto da a IE6 hasLayout para borrar correctamente 
+	clear: both; /* esta propiedad de borrado fuerza a .container a conocer dónde terminan las columnas y a contenerlas */
+
+/*.textofooter{
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 14px;
+	color: #666;
+	font-style: normal;
+	text-align: center;
+	}*/
+	.subfooterConAnadir {
+	margin-top:500px;
+	width:1006.8px;;
+	height: 20px;
+	}
+	.subfooter {
+	margin-top:590px;
+	width:1006.8px;;
+	height: 20px;
+		/*position: relative;/* esto da a IE6 hasLayout para borrar correctamente 
+	clear: both; /* esta propiedad de borrado fuerza a .container a conocer dónde terminan las columnas y a contenerlas */
+}
+.textoSubfooter {
+	width:210px;
+	height: 20px;
+	margin-left:auto;
+	margin-right:auto;
+	}
+
+/* ~~ clases float/clear varias ~~ */
+.fltrt {  /* esta clase puede utilizarse para que un elemento flote en la parte derecha de la página. El elemento flotante debe preceder al elemento junto al que debe aparecer en la página. */
+	float: right;
+	margin-left: 8px;
+}
+.fltlft { /* esta clase puede utilizarse para que un elemento flote en la parte izquierda de la página. El elemento flotante debe preceder al elemento junto al que debe aparecer en la página. */
+	float: left;
+	margin-right: 8px;
+}
+.clearfloat { /* esta clase puede situarse en una <br /> o div vacía como elemento final tras la última div flotante (dentro de #container) si #footer se elimina o se saca fuera de #container */
+	clear:both;
+	height:0;
+	font-size: 1px;
+	line-height: 0px;
+}
+.tablaprincipal{
+	text-transform: uppercase;
+	color: #FFF;
+	background-color: #999;
+}
+.brillo:hover{
+	background-color: #CCC;
+}
+.toast {
+
+                width:200px;
+
+                height:20px;
+
+                height:auto;
+
+                position:absolute;
+
+                left:50%;
+
+                margin-left:-100px;
+
+                bottom:140px;
+
+                background-color: #383838;
+
+                color: #F0F0F0;
+
+                font-family: Calibri;
+
+                font-size: 20px;
+
+                padding:10px;
+
+                text-align:center;
+
+                border-radius: 5px;
+
+                -webkit-box-shadow: 0px 0px 24px -1px rgba(56, 56, 56, 1);
+
+                -moz-box-shadow: 0px 0px 24px -1px rgba(56, 56, 56, 1);
+
+                box-shadow: 0px 0px 24px -1px rgba(56, 56, 56, 1);
+
+            }

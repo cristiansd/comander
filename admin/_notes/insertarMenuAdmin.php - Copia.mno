@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<info>
+	<infoitem key="UD_categorias" value="name:idCategoria;datatype:int,name:nombreCategoria;datatype:string,name:imagenCategoria;datatype:string,name:estadoCategoria;datatype:int" />
+	<infoitem key="UD_subcategorias" value="name:idSubcategoria;datatype:int,name:nombreSubcategoria;datatype:string,name:idCategoriaSubcategoria;datatype:int,name:imagenSubcategoria;datatype:string,name:estadoSubcategoria;datatype:int" />
+</info>

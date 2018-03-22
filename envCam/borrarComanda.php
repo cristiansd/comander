@@ -1,0 +1,1 @@
+<?phprequire_once('../Connections/conexionComanderEnvCam.php');require_once('../includes/funcionesEnvCam.php');$idComanda = $_POST['idComanda'];mysqli_select_db($comcon, $database_comcon);$deleteComandas = "DELETE FROM comandas WHERE idComanda=$idComanda";$result = mysqli_query($comcon, $deleteComandas) or die(mysqli_connect_error());if ($result){echo "OK";}?>

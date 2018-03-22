@@ -1,0 +1,2216 @@
+<!DOCTYPE html> 
+<html>
+    <head>    
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/w3.css">
+        <link rel="stylesheet" href="css/w3-theme-indigo.css">
+        <script type="text/javascript" charset="UTF-8" src="cordova.js"></script>
+        <script type="text/javascript" charset="UTF-8" src="jquery-mobile/jquery.js"></script>
+
+        <style>
+            .toast {
+
+                width:200px;
+
+                height:20px;
+
+                height:auto;
+
+                position:absolute;
+
+                left:50%;
+
+                margin-left:-100px;
+
+                bottom:140px;
+
+                background-color: #383838;
+
+                color: #F0F0F0;
+
+                font-family: Calibri;
+
+                font-size: 20px;
+
+                padding:10px;
+
+                text-align:center;
+
+                border-radius: 5px;
+
+                -webkit-box-shadow: 0px 0px 24px -1px rgba(56, 56, 56, 1);
+
+                -moz-box-shadow: 0px 0px 24px -1px rgba(56, 56, 56, 1);
+
+                box-shadow: 0px 0px 24px -1px rgba(56, 56, 56, 1);
+
+            }
+            .no-seleccionable {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none; 
+            }
+            .loading {
+                position: fixed;
+                left:0px;
+                margin-top: 0px;
+                top: 40px;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                background: url('page-loader.gif') 50% 50% no-repeat rgb(249,249,249);
+            }
+            .ec-stars-wrapper a {
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+            }
+            .back {
+                width: 20%;
+                height: 20%;
+                opacity: 0.8;
+                background: url('page-loader.gif') 50% 50% no-repeat rgb(249,249,249);
+            }
+            .letraBotones{
+                font-weight: bold;
+                color: #5a5a5a;
+            }
+            .div{
+                -webkit-border-radius: 4px 4px 4px 4px; /* recuerda la primera frase */
+            }
+            input[type=text]:focus{
+                border:0px; 
+            }
+
+            :focus{
+                outline: 0px;           
+            }
+            .mySlides {display:none;}
+
+        </style>
+
+        <script type="text/javascript">
+
+//DECLARAMOS LAS VARIABLES NECESARIAS
+            var distancia = 10000;
+            var latitudActual;
+            var longitudActual;
+            var latitudEstablecimiento;
+            var longitudEstablecimiento;
+            var connection;
+            var imagen;
+            var establecimiento;
+            var height;
+            var width;
+            var mapa;
+            var myLatLngActual;
+            var image = 'img/puntero.png';
+            var yo;
+            var zoomActual = 6;
+            var idEstablecimiento;
+            var imagenEstablecimientos;
+            var descripcionProducto;
+            var nutricional;
+            var alergenos;
+            var precio;
+            var nombreProducto;
+            var nombreCategoria;
+            var imagenParaRetorno;
+            var idCategoriaRetorno;
+            var nombreSubcategoria;
+            var imagenSubcategoria;
+            var idSubcategoria;
+            var continuar = true;
+            var idMenu;
+            var nombreMenu;
+            var precioMenu;
+            var imagenEstablecimiento;
+            var myIndex = 0;
+            var maxHeight;
+            var varTiempo = 0;
+            var usuario;
+            var open;
+            var tiquets = 0;
+            var menuIzq = true;
+            var elementClicked = 'vacio';
+            var ubicacion = false;
+            var nPedido;
+            var intervalosPedidos;
+            var intervalPulsado = false;
+
+//FUNCION PARAR CAMBIAR EL ICONO DE MENU ISQUIERDO EN FUNCION SI HAY PEDIDOS O NO
+            function iconoIzquierdoPedidos() {
+                if (tiquets) {
+                    $("#iconoIzqHeader").empty();
+                    $("#iconoIzqHeader").append("<img  src=\"img/menu2.png\" alt=\"Norway\">");
+                    $("#divMiPedidoPendienteLeft").css("display", "block");
+                } else {
+                    $("#iconoIzqHeader").empty();
+                    $("#iconoIzqHeader").append("<img  src=\"img/menu.png\" alt=\"Norway\">");
+                    $("#pendientesLeft").empty();
+                }
+            }
+
+
+//FUNCION PARA CAMBIAR EL ICONO EN FUNCION DE SI HAY PEDIDOS O NO
+            function comprobarPedidos() {
+                if (tiquets) {
+                    $("#iconoDerecho").empty();
+                    $("#iconoDerecho").append("<img  src=\"img/menu2.png\" alt=\"Norway\">");
+                    $("#divMiPedidoPendienteRight").css("display", "block");
+                } else {
+                    $("#iconoDerecho").empty();
+                    $("#iconoDerecho").append("<img  src=\"img/menu.png\" alt=\"Norway\">");
+                    $("#pendientesRight").empty();
+                }
+            }
+
+//FUNCION PARA DETERMINAR SI SE HA INICIADO SESION Y ABRIR PEDIDOS
+            function pedidos(variable) {
+                if (localStorage.getItem("nick")) {
+                    $("#misPedidosLeft").empty();
+                    $("#misPedidosRight").empty();
+                    descargarPedidos(variable, "");
+                }
+            }
+
+//FUNCION PARA CLICKAR EN PEDIDOS
+            function clickPedidos(variable) {
+                if (localStorage.getItem("nick")) {
+                    $("#miPedidoPendienteLeft").removeClass("w3-show");
+                    $("#miPedidoPendienteRight").removeClass("w3-show");
+                    $("#misPedidosLeft").empty();
+                    $("#misPedidosRight").empty();
+                    $("#miPedidoPendienteLeft").empty();
+                    $("#miPedidoPendienteRight").empty();
+                    descargarPedidos(variable, "historico");
+                } else {
+                    document.getElementById('sinSesion').style.display = 'block';
+                }
+            }
+
+//FUNCION PARA CLICKAR EN PEDIDO PENDIENTE
+            function clickPedidosPendiente(variable) {
+                if (localStorage.getItem("nick")) {
+                    $("#misPedidosLeft").removeClass("w3-show");
+                    $("#misPedidosRight").removeClass("w3-show");
+                    $("#misPedidosLeft").empty();
+                    $("#misPedidosRight").empty();
+                    $("#miPedidoPendienteLeft").empty();
+                    $("#miPedidoPendienteRight").empty();
+                    descargarPedidos(variable, "");
+                } else {
+                    document.getElementById('sinSesion').style.display = 'block';
+                }
+            }
+
+//FUNCION PARA ABRIR LOS PDFS 
+            function opener(pedido) {
+
+                var onSuccess = function (data) {
+                };
+
+                function onError(error) {
+                    alert('Ha habido un error al intentar abrir el archivo');
+                }
+
+                window.cordova.plugins.FileOpener.openFile("http://comander.es/Comander/Usuario/tiquets/" + pedido, onSuccess, onError);
+            }
+
+//FUNCION PARA DESPLEGABLE DE PEDIDOS
+            function desplegar() {
+                var x = document.getElementById("misPedidosLeft");
+                if (x.className.indexOf("w3-show") == -1) {
+                    x.className += " w3-show";
+                } else {
+                    x.className = x.className.replace(" w3-show", "");
+                }
+                var y = document.getElementById("misPedidosRight");
+                if (y.className.indexOf("w3-show") == -1) {
+                    y.className += " w3-show";
+                } else {
+                    y.className = y.className.replace(" w3-show", "");
+                }
+            }
+
+//FUNCION PARA DESPLEGABLE DE PEDIDO PENDIENTE
+            function desplegarPendiente() {
+                var x = document.getElementById("miPedidoPendienteLeft");
+                if (x.className.indexOf("w3-show") == -1) {
+                    x.className += " w3-show";
+                } else {
+                    x.className = x.className.replace(" w3-show", "");
+                }
+                var y = document.getElementById("miPedidoPendienteRight");
+                if (y.className.indexOf("w3-show") == -1) {
+                    y.className += " w3-show";
+                } else {
+                    y.className = y.className.replace(" w3-show", "");
+                }
+            }
+
+
+//FUNCION PARAR CARGAR EL USUARIO AL INICIO
+            function cargarUsuario() {
+                if (localStorage.getItem("nick")) {
+                    $("#usuarioLeft").attr("onclick", "");
+                    $("#usuarioRight").attr("onclick", "");
+                    $("#userImgLeft").attr("src", "img/usuario.png");
+                    $("#userImgRight").attr("src", "img/usuario.png");
+                    usuario = localStorage.getItem("nick");
+                    var desconectar = "<a class=\"w3-margin-top\" onclick=\"desconectarSesion()\"><img src=\"img/desconectar.png\"/>desconectar sesión</a>";
+                    $("#leftMenu").append(desconectar);
+                    $("#rightMenu").append(desconectar);
+                    pedidos(false);
+                } else {
+                    usuario = 'Iniciar sesión';
+                    $("#userImgLeft").attr("src", "img/iniciarSesion.png");
+                    $("#userImgRight").attr("src", "img/iniciarSesion.png");
+                    $("#usuarioLeft").attr("onclick", "window.location.href = 'login2.html'");
+                    $("#usuarioRight").attr("onclick", "window.location.href = 'login2.html'");
+                }
+                $("#usuarioLeft").append(usuario);
+                $("#usuarioRight").append(usuario);
+            }
+
+//FUNCION PARA DESCONECTAR SESION
+            function desconectarSesion() {
+                localStorage.removeItem("password");
+                localStorage.removeItem("key");
+                localStorage.removeItem("nick");
+                localStorage.removeItem("idUser");
+                localStorage.removeItem("email");
+                reload();
+            }
+
+//FUNCION PARAR RESTABLECER TIEMPO PARA CIERRE DE APLICACION CUNADO ESTAMOS EN EL INDEX
+            function restablecerTiempo() {
+                varTiempo = 0;
+            }
+
+//FUNCION PARA HACER CLICK EN EL INPUT
+            function clickInput() {
+                $("#autocomplete").focus().click();
+                $("#autocomplete").val('');
+            }
+
+//FUNCION PARA REALIZAR LA COMPROBACION DE LOCALIZACION
+            function comprobarLocalizacion() {
+                if (typeof longitudActual === 'undefined') {
+                    $("#contenido").css("display", "none");
+                    $("#sinGPS").css("display", "block");
+                } else {
+                    $("#locationField").css("display", "none");
+                    $("#contenido").css("display", "none");
+                    $("#loading").css("display", "block");
+                    filtrar(this.latitudActual, this.longitudActual, this.distancia);
+                    initMap();
+                    pedidos(false);
+                    $("#contenido_1").css("display", "block");
+                    $("#lista").css("display", "block");
+                }
+            }
+
+//FUNCION PARA AUTOCOMPLETAR BUSQUEDA DE DIRECCIONES CON GOOGLE
+            function initAutocomplete() {
+                var input = document.getElementById('autocomplete');
+                var autocomplete = new google.maps.places.Autocomplete(input);
+                google.maps.event.addListener(autocomplete, 'place_changed', function () {
+                    var place = autocomplete.getPlace();
+                    lat = place.geometry.location.lat();
+                    lng = place.geometry.location.lng();
+                    latitudActual = lat;
+                    longitudActual = lng;
+                });
+            }
+
+//FUNCION PARA IR PASANDO IMAGENES
+            function carousel() {
+                var i;
+                var x = document.getElementsByClassName("mySlides");
+                for (i = 0; i < x.length; i++) {
+                    x[i].style.display = "none";
+                }
+                myIndex++;
+                if (myIndex > x.length) {
+                    myIndex = 1
+                }
+                x[myIndex - 1].style.display = "block";
+                x[myIndex - 1].style.height = (maxHeight-10) + "px";
+                x[myIndex - 1].style.width = ((width / 100) * 90) + "px;";
+                setTimeout(carousel, 2000);
+            }
+
+//FUNCION PARA RECARGAR PAG
+            function recargar() {
+                location.reload();
+            }
+
+//FUNCION PARA CERRAR APLICACION
+            function cerrarAplicacion() {
+                navigator.app.exitApp();
+            }
+
+//FUNCIONES PARA APERTURA Y CIERRE DE PANEL LATERAL
+            function openLeftMenu() {
+                if ($("#leftMenu").is(":visible")) {
+                    closeLeftMenu();
+                } else {
+                    document.getElementById("leftMenu").style.display = "block";
+                }
+            }
+            function closeLeftMenu() {
+                document.getElementById("leftMenu").style.display = "none";
+            }
+
+            function openRightMenu() {
+                if ($("#rightMenu").is(":visible")) {
+                    closeRightMenu();
+                } else {
+                    document.getElementById("rightMenu").style.display = "block";
+                }
+            }
+            function closeRightMenu() {
+                document.getElementById("rightMenu").style.display = "none";
+            }
+
+//FUNCION PARA CAMBIAR DE COLOR AL PULSAR ELEMENTO DE LA LISTA
+            function changeColor(x) {
+                x.style.background = "#C6D5FF";
+            }
+
+//FUNCION PARA COMPROBAR SI HAY INTERNET
+            function conection() {
+                var networkState = navigator.connection.type; 
+                if (networkState !== Connection.NONE) {
+                    connection = 1;
+                    } else {
+                    toast('No tienes conexión a internet');
+                    connection = 0;
+                }
+            }
+
+//FUNCION PARA CONTROLAR LA CONEXION EN TIEMPO DE EJECUCION
+            function onOnline() {
+                connection = 1;
+            }
+
+//FUNCION PARA CONTROLAR LA CONEXION EN TIEMPO DE EJECUCION
+            function onOffline() {
+                document.getElementById('sinConexion').style.display = 'block';
+                connection = 0;
+            }
+
+//FUNCION PARA MOSTRAR IMAGEN MIENTRAS CARGA LA PAG
+            function loading(action) {
+                if (action === 'mostrar') {
+                    $('.loading').fadeIn(400);
+                }
+                if (action === 'ocultar') {
+                    $('.loading').fadeOut(400);
+                }
+            }
+
+//FUNCION PARA PARSEAR VARIABLES
+            function setVars(Establecimiento, latitud, longitud, imagen, id, imagenEstablecimiento) {
+                this.establecimiento = Establecimiento;
+                this.latitudEstablecimiento = parseFloat(latitud);
+                this.longitudEstablecimiento = parseFloat(longitud);
+                this.imagen = imagen;
+                this.idEstablecimiento = id;
+                this.imagenEstablecimiento = imagenEstablecimiento;
+            }
+
+////FUNCION PARA SETEAR LAS VARIABLES DE MENU
+            function setVarsMenu(nombreCategoria, precio, idCategoria) {
+                this.nombreMenu = nombreCategoria;
+                this.idMenu = idCategoria;
+                this.precioMenu = precio;
+            }
+
+//FUNCION PARA PARSEAR VARIABLES DE LOS PRODUCTOS
+            function setVarsProductos(descripcion, nutricional, alergenos, precio, imagenProducto, nombre) {
+                this.imagenProducto = imagenProducto;
+                this.descripcionProducto = descripcion;
+                if (nutricional === 'null' || nutricional === '') {
+                    this.nutricional = 'No hay informacion disponible.';
+                } else {
+                    this.nutricional = nutricional;
+                }
+                if (alergenos === 'null' || nutricional === '') {
+                    this.alergenos = 'No hay informacion disponible.';
+                } else {
+                    this.alergenos = alergenos;
+                }
+                this.precio = precio;
+                this.nombreProducto = nombre;
+            }
+
+//FUNCION PARA MOSTRAR LISTA DE ESTABLECIMIENTOS
+            function mostrarEstablecimientos() {
+                reFiltrar();
+            }
+
+//FUNCION PARA ESTABLECER LA PAGINA DE RETORNO
+            function setVarsRetorno(nombreCategoria, imagen, idCategoria) {
+                this.nombreCategoria = nombreCategoria;
+                this.imagenParaRetorno = imagen;
+                this.idCategoriaRetorno = idCategoria;
+            }
+
+//FUNCION PARA ESTABLECER LA PAGINA DE RETORNO DE DETALLE DE PRODUCTO
+            function setVarsRetornoProducto(nombreCategoria, imagen, idCategoria) {
+                this.nombreSubcategoria = nombreCategoria;
+                this.imagenSubcategoria = imagen;
+                this.idSubcategoria = idCategoria;
+            }
+
+//FUNCION PARA MOSTRAR RAPIDO
+            function displayBlock(etiqueta) {
+                $("#" + etiqueta).css("display", "block");
+            }
+
+//FUNCION PARA ABRIR EL DETALLE DEL ESTABLECIMIENTO
+            function irA(Establecimiento, latitud, longitud, imagen, id) {
+                setVars(Establecimiento, latitud, longitud, imagen, id, imagen);
+                $("#imagenMapa").fadeOut('fast');
+                $(".loading").css("display", "none");
+                $("contenido_1").css("display", "none");
+                displayBlock('contenido_2');
+                displayBlock('panelSeleccion');
+                $("#iconoIzqHeader").empty();
+                $("#iconoIzqHeader").append("<img  src=\"img/arrow_back.png\" alt=\"Norway\">");
+                $("#iconoIzqHeader").attr("onclick", "mostrarEstablecimientos()");
+                $("#iconoDerecho").empty();
+                $("#iconoDerecho").append("<img  src=\"img/menu.png\" alt=\"Norway\">");
+                menuIzq = false;
+                pedidos(false);
+                $("#iconoDerecho").attr("onclick", "openRightMenu()");
+                $("#contenido_1").css("display", "none");
+                $("#imagenEstablecimiento").attr("src", "http://comander.es/Comander/imagenes/establecimientos/" + imagen);
+                $("#carta").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#opiniones").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#informacion").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#carta").css("border-bottom", "5px solid #3f51b5");
+                $("#mapaCompleto").css("display", "none");
+                clickEnCarta();
+                initMap();
+            }
+
+//FUNCION QUE SE ACTIVA CUANDO SE CLICA EL BOTON INFORMACION
+            function clickEnInformacion() {
+                pedidos(false);
+                $("#info").remove();
+                $("#iconoIzqHeader").attr("onclick", "clickEnCarta()");
+                $("#carta").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#opiniones").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#informacion").css("border-bottom", "5px solid #3f51b5");
+                $("#mapaCompleto").css("display", "none");
+                $("#imagenEstablecimiento").css("display", "none");
+                $("#listaProductos").css("display", "none");
+                $("#imagenMapa").css("display", "block");
+                $("#scrollListaCategorias").attr("style", "overflow: scroll;width: 100%;height:" + (height - 300) + "px;");
+                $("#listaProductos").empty();
+                descargarInformacion();
+            }
+
+//FUNCION QUE SE ACTIVA CUANDO SE CLICA EL BOTON OPINIONES
+            function clickEnOpiniones() {
+                pedidos(false);
+                $("#listaProductos").css("display", "none");
+                $("#scrollListaCategorias").css("display", "none");
+                $("#scrollListaCategorias").attr("style", "overflow: scroll;width: 100%;height:" + (height - 300) + "px;");
+                $("#info").css("display", "none");
+                $("#info").remove();
+                $("#iconoIzqHeader").attr("onclick", "clickEnCarta()");
+                $("#mapaCompleto").fadeOut('fast');
+                $("#carta").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#informacion").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#opiniones").css("border-bottom", "5px solid #3f51b5");
+                $("#imagenMapa").fadeOut('fast', function () {
+                    $("#imagenEstablecimiento").fadeIn('fast');
+                });
+                $("#listaProductos").empty();
+                $("#listaProductos").css("display", "block");
+                descargarComentarios();
+            }
+
+//FUNCION QUE SE ACTIVA CUANDO SE PULSA EL BOTON CARTA
+            function clickEnCarta() {
+                pedidos(false);
+                $("#iconoIzqHeader").empty();
+                $("#iconoIzqHeader").append("<img  src=\"img/arrow_back.png\" alt=\"Norway\">");
+                $("#listaProductos").empty();
+                $("#listaProductos").css('display', 'none');
+                $("#info").remove();
+                $("#mapaCompleto").css('display', 'none');
+                $("#imagenMapa").fadeOut('fast', function () {
+                    $("#imagenEstablecimiento").css("display", "block");
+                });
+                $("#iconoIzqHeader").attr("onclick", "mostrarEstablecimientos()");
+                $("#opiniones").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#informacion").attr("style", "width:" + (width / 3) + "px;border:1px solid #cdcdcd;");
+                $("#carta").css("border-bottom", "5px solid #3f51b5");
+                $("#scrollListaCategorias").attr("style", "overflow: scroll;width: 100%;height:" + (height - 300) + "px;");
+                addMenu('carta_ejempo.jpg', 'Menú/Ofertas', 1);
+                descargarCarta();
+            }
+
+//FUNCION PARA MOSTRAR EL MAPA GEOLOCALIZADO
+            function clickEnMapa() {
+                pedidos(false);
+                $("#iconoIzqHeader").attr("onclick", "clickEnInformacion()");
+                $("#mapaCompleto").attr("style", "height:" + (height) + "px;width:100%;");
+                $("#mapaCompleto").fadeIn('fast');
+                $("#imagenMapa").fadeOut('fast');
+                geolocationReal();
+                cargarMapa();
+            }
+
+//FUNCION PARA MOSTRAR EL DETALLE DEL PRODUCTO
+            function detalleProducto(nombreCategoria, imagen, descripcion, nutricional, alergenos, precio) {
+                pedidos(false);
+                setVarsProductos(descripcion, nutricional, alergenos, precio, imagen, nombreCategoria);
+                $("#iconoIzqHeader").attr("onclick", "atrasDetalleProducto('" + this.nombreSubcategoria + "','" + this.imagenSubcategoria + "','" + this.idSubcategoria + "');");
+                $("#imagenEstablecimiento").attr("src", "http://comander.es/Comander/archivos/ImagenesAdd/" + imagen);
+                $("#productoDetalle").attr("style", "width:" + (width / 2) + "px;border:1px solid #cdcdcd;");
+                $("#informacionProducto").attr("style", "width:" + (width / 2) + "px;border:1px solid #cdcdcd;");
+                $("#elecciones").css("display", "none");
+                $("#listaProductos").css("display", "none");
+                $("#elecciones").css("display", "none");
+                $("#listaProductos").css("display", "none");
+                clickEnProductoDetalle();
+            }
+
+//FUNCION PARA MOSTRAR EL DETALLE DE PRODUCTOS DE MENU
+            function detalleProductoMenu(nombreCategoria, imagen, descripcion, nutricional, alergenos, precio) {
+                pedidos(false);
+                setVarsProductos(descripcion, nutricional, alergenos, precio, imagen, nombreCategoria);
+                $("#panelSeleccion").css("display", "none");
+                $("#productoDetalle").attr("style", "width:" + (width / 2) + "px;border:1px solid #cdcdcd;");
+                $("#informacionProducto").attr("style", "width:" + (width / 2) + "px;border:1px solid #cdcdcd;");
+                $("#elecciones").css("display", "none");
+                $("#listaProductos").css("display", "none");
+                $("#iconoIzqHeader").attr("onclick", "atrasDetalleProductoMenu('" + nombreMenu + "','" + precioMenu + "','" + idMenu + "');");
+                $("#imagenEstablecimiento").attr("src", "http://comander.es/Comander/archivos/ImagenesAdd/" + imagen);
+                $("#imagenEstablecimiento").css("display", "block");
+                $("#panelSeleccion").css("display", "block");
+                clickEnProductoDetalleMenu();
+            }
+
+//FUNCION QUE SE ACTIVA CUNADO SE PULSA EL BOTON DE INFORMACION DEL PRODUCTO DE MENU
+            function clickEnProductoDetalleMenu() {
+                pedidos(false);
+                $("#contenidoNutricional").css("display", "none");
+                $("#productoDetalle").css("border-bottom", "5px solid #3f51b5");
+                $("#informacionProducto").attr("style", "width:" + (width / 2) + "px;border:1px solid #cdcdcd;");
+                $("#eleccionesProducto").fadeIn('fast');
+                $("#contenidoDetalle").fadeIn('fast');
+                $("#tituloDescripcion").empty();
+                $("#tituloDescripcion").append(nombreProducto);
+                $("#tituloDescripcion").css("display", "block");
+                $("#contenidoDescripcionProducto").empty();
+                $("#contenidoDescripcionProducto").append(descripcionProducto);
+                $("#contenidoDescripcionProducto").attr("style", "font-weight:normal");
+                $("#precioProducto").empty();
+                $("#descripcionProducto").fadeIn('fast');
+                $("#informacionNutricional").empty();
+                $("#informacionAlergenos").empty();
+                $("#productoDetalle").attr("onclick", "clickEnProductoDetalleMenu()");
+            }
+
+//FUNCION QUE SE ACTIVA CUNADO SE PULSA EL BOTON DE INFORMACION DEL PRODUCTO
+            function clickEnProductoDetalle() {
+                pedidos(false);
+                $("#contenidoNutricional").css("display", "none");
+                $("#productoDetalle").css("border-bottom", "5px solid #3f51b5");
+                $("#informacionProducto").attr("style", "width:" + (width / 2) + "px;border:1px solid #cdcdcd;");
+                $("#eleccionesProducto").fadeIn('fast');
+                $("#contenidoDetalle").css("display", "block");
+                $("#tituloDescripcion").empty();
+                $("#tituloDescripcion").css("display", "block");
+                $("#tituloDescripcion").append(nombreProducto);
+                $("#contenidoDescripcionProducto").empty();
+                $("#contenidoDescripcionProducto").append(descripcionProducto);
+                $("#contenidoDescripcionProducto").attr("style", "font-weight:normal");
+                $("#precioProducto").empty();
+                $("#precioProducto").append(precio + "€");
+                $("#descripcionProducto").fadeIn('fast');
+                $("#informacionNutricional").empty();
+                $("#informacionAlergenos").empty();
+            }
+
+//FUNCION QUE SE ACTIVA CUNADO SE PULSA EL BOTON DE DETALLE DEL PRODUCTO
+            function clickEnInformacionProducto() {
+                pedidos(false);
+                $("#tituloDescripcion").empty();
+                $("#informacionNutricional").empty();
+                $("#informacionAlergenos").empty();
+                $("#tituloDescripcion").css("display", "none");
+                $("#contenidoDescripcionProducto").empty();
+                $("#precioProducto").empty();
+                $("#contenidoNutricional").css("display", "none");
+                $("#informacionNutricional").append(nutricional);
+                $("#informacionAlergenos").append(alergenos);
+                $("#informacionProducto").css("border-bottom", "5px solid #3f51b5");
+                $("#productoDetalle").attr("style", "width:" + (width / 2) + "px;border:1px solid #cdcdcd;");
+                $("#contenidoDetalle").css("display", "none");
+                $("#contenidoNutricional").css("display", "block");
+            }
+
+//FUNCION PARA IR PARA ATRAS DESDE EL DETALLE DEL PRODUCTO
+            function atrasDetalleProducto(nombre, imagen, id) {
+                pedidos(false);
+                $("#descripcionProducto").css("display", "none");
+                $("#imagenEstablecimiento").attr("src", "http://comander.es/Comander/imagenes/establecimientos/" + imagen);
+                $("#eleccionesProducto").css("display", "none");
+                $("#elecciones").css("display", "block");
+                $("#carta").css("border-bottom", "5px solid #3f51b5");
+                $("#contenido_2").css("display", "block");
+                $("#listaProductos").css("display", "block");
+                irAProductos(nombre, imagen, id);
+            }
+
+//FUNCION PARA IR PARA ATRAS DESDE EL DETALLE DEL PRODUCTO DE MENU
+            function atrasDetalleProductoMenu(nombre, imagen, id) {
+                pedidos(false);
+                $("#descripcionProducto").css("display", "none");
+                $("#imagenEstablecimiento").attr("src", "http://comander.es/Comander/imagenes/establecimientos/" + imagenEstablecimiento);
+                $("#eleccionesProducto").css("display", "none");
+                $("#elecciones").css("display", "block");
+                $("#carta").css("border-bottom", "5px solid #3f51b5");
+                detalleMenu(nombre, imagen, id);
+            }
+
+//FUNCION PARA COLOCAR LA CABECERA DE LA LISTA DEL MENU
+            function detalleMenu(nombreCategoria, imagen, idCategoria) {
+                pedidos(false);
+                $("#iconoIzqHeader").attr("onclick", "irAMenus()");
+                $("#scrollListaCategorias").attr("style", "overflow: scroll;width: 100%;height:" + (height) + "px;");
+                $("#imagenEstablecimiento").css("display", "none");
+                $("#listaProductos").empty();
+                $("#listaProductos").css("display", "none");
+                setVarsMenu(nombreCategoria, imagen, idCategoria);
+                addCabeceraMenu(nombreCategoria, imagen, idCategoria);
+                detalleListaMenu(nombreCategoria, imagen, idCategoria);
+            }
+            
+//FUNCION PARA AÑADIR LOS PEDIDOS AL SIDENAV
+            function addPedido(pedido, estado, fecha) {
+                if (estado == '0') {
+                    var registro = "<a style=\"background-color:#dddddd\" onclick=\"pedidoPendiente('" + pedido + "')\">" + fecha + "<font color = red>&nbsp;Pendiente</font></a>";
+                    $("#miPedidoPendienteLeft").append(registro);
+                    $("#miPedidoPendienteRight").append(registro);
+                } else {
+                    var registro = "<a onclick=\"opener('" + pedido + ".pdf')\">" + fecha + "</a>";
+                    $("#misPedidosLeft").append(registro);
+                    $("#misPedidosRight").append(registro);
+                }                
+            }
+            
+//FUNCION PARA VISUALIZAR EL PEDIDO PENDIENTE
+            function pedidoPendiente(pedido){
+                intervalPulsado = true;
+                console.log('se ha pulsado el boton pedido pendiente');
+                $("#tituloPedidoPendiente").empty();
+                $("#tituloPedidoPendiente").append("Comandas pendientes del " + pedido);                
+                $("#cargando").css("display", "block");
+                $("#id07").css("display", "block");
+                nPedido = pedido;
+                descargarPedidoPendiente();                
+            }           
+
+            
+//FUNCION PARA AÑADIR LAS COMANDAS A LA LISTA
+            function addComanda(cant, nombre){
+                var registro = "<tr><td style=\"width:" + ((width/100)*10) + "px;\">" + cant + "</td><td style=\"width:" + ((width/100)*90) + "px;text-align: left;padding-left:50px;\">" + nombre + "</td></tr>";
+                $("#tablaMenu").append(registro);
+            }
+            
+//FUNCION PARA REFRESCAR EN INTERVALOS EL PANEL DE PEDIDOS PENDIENTES
+            function setIntervalos(){
+                if(intervalPulsado){
+                console.log('se ha pulsado set interval');
+                intervalosPedidos = setTimeout("descargarPedidoPendiente()",30000);
+                }else{
+                    
+                }
+            }          
+
+//FUNCION PARA CERRAR PANEL DE PEDIDOS PENDIENTES
+            function cerrarPanelPendientes(){
+                intervalPulsado = false;
+                clearTimeout(intervalosPedidos);
+            }
+
+            
+//FUNCION PARA DESCARGAR LOS PEDIDOS PENDIENTES
+            function descargarPedidoPendiente() {
+                console.log('se ha iniciado descargarpedidoPendeinre');
+                var cant;
+                var nombre;
+                var cantidad = 0;
+                
+                $("#tablaMenu").empty();
+                        
+                var data = {'pedido': nPedido};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarPedidoPendiente.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+                                cant = establecimiento['cantidad'];
+                                nombre = establecimiento['nombre'];                            
+                        });
+                        if(cant == null){
+                            recargar();
+                        }else{
+                            cantidad++;
+                            addComanda(cant, nombre);
+                        }
+                    });
+                    $("#cargando").css("display", "none");
+                    $("#tablaMenu").css("display", "block");
+                    setIntervalos();
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA LA DESCARGA DE LOS COMENTARIOS
+
+            function descargarComentarios() {
+                var nick;
+                var puntuacion;
+                var comentario;
+                var fecha;
+                var cantidad = 0;
+
+                $("#back").css("display", "block");
+
+                var data = {'id': idEstablecimiento};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarComentarios.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $("#lista").empty();
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            nick = establecimiento['nick'];
+                            puntuacion = establecimiento['puntuacion'];
+                            comentario = establecimiento['comentario'];
+                            fecha = establecimiento['fecha'];
+                        });
+                        cantidad++;
+                        addComentarios(nick, puntuacion, comentario, cantidad, fecha);
+                        addPuntuacionVisitantes(puntuacion, cantidad);
+                    });
+                    $("#back").fadeOut('fast');
+                    $("#scrollListaCategorias").css("display", "block");
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA LA DESCARGA DE LA INFORMACION DEL ESTABLECIMIENTO
+
+            function descargarInformacion() {
+                var nombre;
+                var definicion;
+                var direccion;
+                var apertura_lunes;
+                var apertura_martes;
+                var apertura_miercoles;
+                var apertura_jueves;
+                var apertura_viernes;
+                var apertura_sabado;
+                var apertura_domingo;
+                var cierre_lunes;
+                var cierre_martes;
+                var cierre_miercoles;
+                var cierre_jueves;
+                var cierre_viernes;
+                var cierre_sabado;
+                var cierre_domingo;
+                var cantidad = 0;
+
+                $("#back").css("display", "block");
+
+                var data = {'id': idEstablecimiento};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarInformacion.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $("#lista").empty();
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            nombre = establecimiento['nombre'];
+                            definicion = establecimiento['definicion'];
+                            direccion = establecimiento['direction'];
+                            apertura_lunes = establecimiento['apertura_monday'];
+                            apertura_martes = establecimiento['apertura_tuesday'];
+                            apertura_miercoles = establecimiento['apertura_wednesday'];
+                            apertura_jueves = establecimiento['apertura_thursday'];
+                            apertura_viernes = establecimiento['apertura_friday'];
+                            apertura_sabado = establecimiento['apertura_saturday'];
+                            apertura_domingo = establecimiento['apertura_sunday'];
+                            cierre_lunes = establecimiento['cierre_monday'];
+                            cierre_martes = establecimiento['cierre_tuesday'];
+                            cierre_miercoles = establecimiento['cierre_wednesday'];
+                            cierre_jueves = establecimiento['cierre_thursday'];
+                            cierre_viernes = establecimiento['cierre_friday'];
+                            cierre_sabado = establecimiento['cierre_saturday'];
+                            cierre_domingo = establecimiento['cierre_sunday'];
+
+                        });
+                        cantidad++;
+                        addInformacion(nombre, definicion, direccion, apertura_lunes, apertura_martes,
+                                apertura_miercoles, apertura_jueves, apertura_viernes, apertura_sabado,
+                                apertura_domingo, cierre_lunes, cierre_martes, cierre_miercoles,
+                                cierre_jueves, cierre_viernes, cierre_sabado, cierre_domingo);
+                    });
+                    $("#back").fadeOut('fast');
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA LA DESCARGA DE LA CARTA
+
+            function descargarCarta() {
+                var imagen;
+                var nombreCategoria;
+                var idCategoria;
+                var cantidad = 0;
+
+                $("#cargar").css("display", "block");
+
+                var data = {'id': idEstablecimiento};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarCarta.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $("#lista").empty();
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            imagen = establecimiento['imagen'];
+                            nombreCategoria = establecimiento['nombreCategoria'];
+                            if (establecimiento['idCategoria'] == null) {
+                                $("#listaProductos").css("display", "none");
+                                toast('Este establecimiento no está disponible');
+                                setTimeout('reload()', 2500);
+                            } else {
+                                idCategoria = establecimiento['idCategoria'];
+                            }
+                        });
+                        cantidad++;
+                        $.preloadImages("http://comander.es/Comander/archivos/ImagenesAdd/" + imagen);
+                        addCategorias(imagen, nombreCategoria, idCategoria)
+                    });
+                    $("#cargar").fadeOut('fast', function () {
+                        $("#listaProductos").fadeIn('fast');
+                    });
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA DESCARGAR LAS SUBCATEGORIAS
+            function irASubcategorias(nombreCategoria, imagen, idCategoria) {
+                $("#listaProductos").css('display', 'none');
+                setVarsRetorno(this.nombreCategoria, this.imagen, idCategoria);
+                $("#iconoIzqHeader").attr("onclick", "clickEnCarta()");
+                $("#listaProductos").empty();
+                var imagen;
+                var nombreCategoria;
+                var idSubcategoria;
+                var cantidad = 0;
+
+                $("#cargar").css("display", "block");
+
+                var data = {'id': idEstablecimiento, 'idCategoria': idCategoria};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarCarta.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $("#lista").empty();
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            imagen = establecimiento['imagen'];
+                            nombreCategoria = establecimiento['nombreCategoria'];
+                            idSubcategoria = establecimiento['idCategoria'];
+                        });
+                        cantidad++;
+                        if ($.preloadImages("http://comander.es/Comander/archivos/ImagenesAdd/" + imagen)) {
+                            addSubCategorias(imagen, nombreCategoria, idSubcategoria);
+                        }
+                    });
+                    $("#cargar").fadeOut('fast', function () {
+                        $("#listaProductos").fadeIn('fast');
+                    });
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA DESCARGAR LOS PRODUCTOS
+            function irAProductos(nombreCategoria, imagen, idCategoria) {
+                $("#listaProductos").css('display', 'none');
+                $("#back").fadeIn('fast');
+                setVarsRetornoProducto(this.nombreCategoria, this.imagen, idCategoria);
+                $("#iconoIzqHeader").attr("onclick", "irASubcategorias('" + nombreCategoria + "','" + imagenParaRetorno + "','" + idCategoriaRetorno + "');");
+                $("#listaProductos").empty();
+                var imagen;
+                var nombreCategoria;
+                var idSubcategoria;
+                var cantidad = 0;
+                var precio;
+                var descripcion;
+                var nutricional;
+                var alergenos;
+
+                $("#cargar").css("display", "block");
+
+                var data = {'id': idEstablecimiento, 'idProducto': idCategoria};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarCarta.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $("#lista").empty();
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            imagen = establecimiento['imagen'];
+                            nombreCategoria = establecimiento['nombreCategoria'];
+                            idSubcategoria = establecimiento['idCategoria'];
+                            precio = establecimiento['precio'];
+                            descripcion = establecimiento['descripcion'];
+                            nutricional = establecimiento['nutricional'];
+                            alergenos = establecimiento['alergenos'];
+                        });
+                        cantidad++;
+                        if ($.preloadImages("http://comander.es/Comander/archivos/ImagenesAdd/" + imagen)) {
+                            addProductos(imagen, nombreCategoria, precio, descripcion, nutricional, alergenos);
+                        }
+                    });
+                    $("#cargar").fadeOut('fast', function () {
+                        $("#listaProductos").fadeIn('fast');
+                    });
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA DESCARGAR LOS PEDIDO DEL USUARIO
+            function descargarPedidos(variable, lista) {
+                var pedido;
+                var estado;
+                var fecha;
+                tiquets = 0;
+                var idUser = localStorage.getItem("idUser");
+
+                var data = {'idUser': idUser};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarPedidos.php',
+                    crossDomain: true,
+                    cache: false,
+                    async: false,
+                });
+                ajax.done(function (data) {
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            pedido = establecimiento['tiquet'];
+                            estado = establecimiento['estado'];
+                            fecha = establecimiento['fecha'];
+                            if (estado == '0') {
+                                tiquets++;
+                            }
+                        });
+                        if (variable == true) {
+                            addPedido(pedido, estado, fecha);
+                        }
+                    });
+                    if (menuIzq) {
+                        iconoIzquierdoPedidos();
+                    } else {
+                        comprobarPedidos();
+                    }
+                    if (lista == "historico") {
+                        desplegar();
+                    } else {
+                        desplegarPendiente();
+                    }
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA DESCARGAR LA LISTA DE MENUS
+            function irAMenus(nombreCategoria, imagen, idCategoria) {
+                $("#imagenEstablecimiento").fadeIn('fast');
+                $("#imagenEstablecimiento").attr("src", "http://comander.es/Comander/imagenes/establecimientos/" + imagenEstablecimiento);
+                $("#iconoIzqHeader").attr("onclick", "clickEnCarta()");
+                $("#listaProductos").empty();
+                pedidos(false);
+                var nombreCategoria;
+                var idSubcategoria;
+                var cantidad = 0;
+                var precio;
+
+                $("#cargar").css("display", "block");
+
+                var data = {'id': idEstablecimiento, 'menu': 1};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarCarta.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $("#lista").empty();
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            nombreCategoria = establecimiento['nombreCategoria'];
+                            idSubcategoria = establecimiento['idCategoria'];
+                            precio = establecimiento['precio'];
+                        });
+                        cantidad++;
+                        addMenus(nombreCategoria, precio, idSubcategoria);
+                    });
+                    $("#cargar").fadeOut('fast');
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA PRECARGAR IMAGENES
+            jQuery.preloadImages = function () {
+                for (var i = 0; i < arguments.length; i++) {
+                    jQuery("<img>").attr("src", arguments[i]);
+                }
+                return true;
+            }
+//FUNCION PARA RELLENAR LOS SUBMENUS
+            function rellenaListaMenu(id) {
+                var nombreCategoria;
+                var idSubcategoria;
+                var cantidad = 0;
+                var imagen;
+                var descripcion;
+                var nutricional;
+                var alergenos;
+                var idSubmenu = id;
+
+                $("#cargar").css("display", "block");
+
+                var data = {'id': idEstablecimiento, 'idSubmenu': id};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarCarta.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    //$("#lista").empty();
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            nombreCategoria = establecimiento['nombreCategoria'];
+                            idSubcategoria = establecimiento['idCategoria'];
+                            imagen = establecimiento['imagen'];
+                            descripcion = establecimiento['descripcion'];
+                            nutricional = establecimiento['nutricional'];
+                            alergenos = establecimiento['alergenos'];
+
+                        });
+                        cantidad++;
+                        $.preloadImages("http://comander.es/Comander/archivos/ImagenesAdd/" + imagen);
+                        addProductosSubmenu(nombreCategoria, idSubcategoria, imagen, descripcion, nutricional, alergenos, idSubmenu);
+                    });
+                    $("#cargar").fadeOut('fast');
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+                continuar = true;
+            }
+
+//FUNCION PARA EL DETALLE DE MENU
+            function detalleListaMenu(nombreCategoria, imagen, idCategoria) {
+                var nombreCategoria;
+                var idSubcategoria;
+                var cantidad = 0;
+
+                $("#cargar").css("display", "block");
+
+                var data = {'id': idEstablecimiento, 'idmenu': idCategoria};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/descargarCarta.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $.each(data, function (id, establecimiento) {
+                        $.each(establecimiento, function () {
+
+                            nombreCategoria = establecimiento['nombreCategoria'];
+                            idSubcategoria = establecimiento['idCategoria'];
+                        });
+                        cantidad++;
+                        addSubMenus(nombreCategoria, idSubcategoria, cantidad);
+                        addListaProductosMenu(idSubcategoria);
+                        rellenaListaMenu(idSubcategoria);
+                    });
+                    $("#cargar").fadeOut('fast', function () {
+                        $("#listaProductos").css("display", "block");
+                    });
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNCION PARA DETERMINAR EL TIPO DE ZOOM NECESARIO PARA EL MAPA
+            function determineZoom() {
+                var distancia = getDistanceToCoords(latitudEstablecimiento, longitudEstablecimiento, latitudActual, longitudActual);
+                var zoom;
+                if (distancia <= 0.010) {
+                    zoom = 20;
+                } else if (distancia <= 0.25 && distancia > 0.010) {
+                    zoom = 19;
+                } else if (distancia <= 0.05 && distancia > 0.025) {
+                    zoom = 18;
+                } else if (distancia <= 0.1 && distancia > 0.05) {
+                    zoom = 17;
+                } else if (distancia <= 0.25 && distancia > 0.1) {
+                    zoom = 16;
+                } else if (distancia <= 0.5 && distancia > 0.25) {
+                    zoom = 15;
+                } else if (distancia <= 1 && distancia > 0.25) {
+                    zoom = 14;
+                } else if (distancia <= 2.5 && distancia > 1) {
+                    zoom = 13;
+                } else if (distancia <= 5 && distancia > 2.5) {
+                    zoom = 12;
+                } else if (distancia <= 13 && distancia > 5) {
+                    zoom = 11;
+                } else if (distancia <= 16 && distancia > 13) {
+                    zoom = 10;
+                } else if (distancia <= 25 && distancia > 16) {
+                    zoom = 9;
+                } else if (distancia <= 100 && distancia > 25) {
+                    zoom = 8;
+                } else if (distancia <= 150 && distancia > 100) {
+                    zoom = 7;
+                } else if (distancia <= 300 && distancia > 150) {
+                    zoom = 6;
+                }
+                if (zoom != zoomActual) {
+                    zoomActual = zoom;
+                    cargarMapa();
+                    miPosicionActual();
+                }
+            }
+
+//FUNCION PARA DETERMINAR LA DISTANCIA HASTA EL ESTABLECIMIENTO
+            function getDistanceToCoords(lat1, lon1, lat2, lon2) {
+                function _deg2rad(deg) {
+                    return deg * (Math.PI / 180)
+                }
+                var R = 6371; // Radius of the earth in km
+                var dLat = _deg2rad(lat2 - lat1);  // deg2rad below
+                var dLon = _deg2rad(lon2 - lon1);
+                var a =
+                        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(_deg2rad(lat1)) * Math.cos(_deg2rad(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                var d = R * c; // Distance in km
+                return d.toFixed(3);
+            }
+
+//FUNCION PARA MOSTRAR MAPA
+            function initMap() {
+                var myLatLng = new google.maps.LatLng(latitudEstablecimiento, longitudEstablecimiento);
+                var mapOptions = {
+                    zoom: 16,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    center: myLatLng
+                }
+                var map = new google.maps.Map(document.getElementById("imagenMapa"), mapOptions);
+                var marker = new google.maps.Marker({
+                    position: myLatLng
+                });
+                marker.setMap(map);
+            }
+
+//FUNCION PARA MOSTRAR MAPA CON PUNTERO LOCALIZACION 
+            function cargarMapa() {
+                var myLatLngEstablecimiento = new google.maps.LatLng(latitudEstablecimiento, longitudEstablecimiento);
+                var mapOptions = {
+                    zoom: zoomActual,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    center: myLatLngEstablecimiento
+                };
+                mapa = new google.maps.Map(document.getElementById("mapaCompleto"), mapOptions);
+                var establecimiento = new google.maps.Marker({
+                    position: myLatLngEstablecimiento,
+                    title: 'prueba de etiqueta'
+                });
+                establecimiento.setMap(mapa);
+            }
+
+//FUNCION PARA AÑADIR LA INFORMACION A LA PANTALLA DE INFORMACION
+            function addInformacion(nombre, definicion, direccion, apertura_lunes, apertura_martes,
+                    apertura_miercoles, apertura_jueves, apertura_viernes, apertura_sabado,
+                    apertura_domingo, cierre_lunes, cierre_martes, cierre_miercoles,
+                    cierre_jueves, cierre_viernes, cierre_sabado, cierre_domingo) {
+
+                var registro = "<div id=\"info\" class=\"letraBotones\">" +
+                        "<div id=\"nombre\" class=\"w3-xlarge w3-center w3-padding\">" + nombre + "</div>" +
+                        "<div id=\"definicion\" style=\"font-weight:normal\" class=\"w3-padding\">" + definicion + "</div>" +
+                        "<div id=\"horarios\" style=\"font-weight:normal\" class=\"w3-padding w3-small\">" +
+                        "<div id=\"registro_1\">" +
+                        "<a id=\"apertura\">Lunes: " + apertura_lunes + "</a><a>-</a><a id=\"cierre\">" + cierre_lunes + "</a>" +
+                        "</div>" +
+                        "<div id=\"registro_2\">" +
+                        "<a id=\"apertura\">Martes: " + apertura_martes + "</a><a>-</a><a id=\"cierre\">" + cierre_martes + "</a>" +
+                        "</div>" +
+                        "<div id=\"registro_3\">" +
+                        "<a id=\"apertura\">Miercoles: " + apertura_miercoles + "</a><a>-</a><a id=\"cierre\">" + cierre_miercoles + "</a>" +
+                        "</div>" +
+                        "<div id=\"registro_4\">" +
+                        "<a id=\"apertura\">Jueves: " + apertura_jueves + "</a><a>-</a><a id=\"cierre\">" + cierre_jueves + "</a>" +
+                        "</div>" +
+                        "<div id=\"registro_5\">" +
+                        "<a id=\"apertura\">Viernes: " + apertura_viernes + "</a><a>-</a><a id=\"cierre\">" + cierre_viernes + "</a>" +
+                        "</div>" +
+                        "<div id=\"registro_6\">" +
+                        "<a id=\"apertura\">Sabado: " + apertura_sabado + "</a><a>-</a><a id=\"cierre\">" + cierre_sabado + "</a>" +
+                        "</div>" +
+                        "<div id=\"registro_0\">" +
+                        "<a id=\"apertura\">Domingo: " + apertura_domingo + "</a><a>-</a><a id=\"cierre\">" + cierre_domingo + "</a>" +
+                        "</div></div>" +
+                        "<div id=\"direccion\" class=\"w3-padding w3-small \">" + direccion + "</div>" +
+                        "</div>";
+                $("#scrollListaCategorias").append(registro);
+                remarcarDia();
+            }
+
+//FUNCION PARA CREAR REGISTROS DE COMENTARIOS
+            function addComentarios(nick, puntuacion, comentario, registros, fecha) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 5px;" +
+                        "padding-left: 10px;margin-left: 10px;\"><div style=\"width:180px;\"><a>" + nick + "</a>" +
+                        "<a class=\"w3-tiny w3-padding-left\">(" + fecha + ")</a></div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "<div id =\"puntos_" + registros + "\" class=\"ec-stars-wrapper\"></div>" +
+                        "<div id=\"comentario\" class=\"w3-tiny\">" + comentario + "</div>" +
+                        "</li>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA CREAR REGISTROS
+            function addRegistro(imagen, nombreEstablecimiento, latitud, longitud, registros, direction, apertura, cierre, id) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        "<div onclick=\"irA('" + nombreEstablecimiento + "'," + latitud + "," + longitud + ",'" + imagen + "'," + id + ")" +
+                        "\"style=\"height:90px;\">" +
+                        "<img src=\"http://comander.es/Comander/imagenes/establecimientos/" + imagen +
+                        "\" class=\"w3-left\" style=\"width:90px;height:88px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 5px;" +
+                        "padding-left: 10px;margin-left: 100px;\"><div style=\"width:180px;\">" + nombreEstablecimiento + "</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "<div id =\"puntuacion_" + registros + "\" class=\"ec-stars-wrapper\"></div>" +
+                        "<div id=\"direction\" class=\"w3-tiny\">" + direction + "</div>" +
+                        "<div id=\"horario_" + registros + "\" class=\"w3-tiny\" style=\"font-weight:normal\">" +
+                        "<a>horario: " + apertura + "-" + cierre + "</a></div></li>";
+
+                $("#lista").append(registro);
+            }
+
+//FUNCION PARA AÑADIR IMAGENES AL BOTON D VER RESTAURANTES
+            function addImagesRestaurantes(imagen) {
+                var registro = "<img class=\"mySlides\" src=\"http://comander.es/Comander/imagenes/establecimientos/" + imagen + "\" style=\"width:100%\">";
+                $("#buton2").append(registro);
+            }
+
+//FUNCION PARA CREAR REGISTROS DE CATEGORIAS
+            function addCategorias(imagen, nombreCategoria, id) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        "<div onclick=\"irASubcategorias('" + nombreCategoria + "','" + imagen + "','" + id + "')" +
+                        "\" style=\"height:90px;\">" +
+                        "<img src=\"http://comander.es/Comander/archivos/ImagenesAdd/" + imagen +
+                        "\" class=\"w3-left\" style=\"width:90px;height:88px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 30px;" +
+                        "padding-left: 10px;margin-left: 100px;\"><div style=\"width:180px;\">" + nombreCategoria + "</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "</li>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA CREAR REGISTROS DE SUBCATEGORIAS
+            function addSubCategorias(imagen, nombreCategoria, id) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        "<div onclick=\"irAProductos('" + nombreCategoria + "','" + imagen + "','" + id + "')" +
+                        "\" style=\"height:90px;\">" +
+                        "<img src=\"http://comander.es/Comander/archivos/ImagenesAdd/" + imagen +
+                        "\" class=\"w3-left\" style=\"width:90px;height:88px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 30px;" +
+                        "padding-left: 10px;margin-left: 100px;\"><div style=\"width:180px;\">" + nombreCategoria + "</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "</li>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA CREAR REGISTROS DE PRODUCTOS
+            function addProductos(imagen, nombreCategoria, precio, descripcion, nutricional, alergenos) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        "<div onclick=\"detalleProducto('" + nombreCategoria + "','" + imagen + "','" + descripcion + "','" + nutricional + "','" + alergenos + "','" + precio + "')\"" +
+                        "<div style=\"height:90px;\">" +
+                        "<img src=\"http://comander.es/Comander/archivos/ImagenesAdd/" + imagen +
+                        "\" class=\"w3-left\" style=\"width:90px;height:88px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 10px;" +
+                        "padding-left: 10px;margin-left: 100px;\"><div style=\"width:180px;\">" + nombreCategoria + "</div>" +
+                        "<div style=\"width:180px;padding-top:10px\">" + precio + "€</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "</div></div></li>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA AÑADIR EL REGISTRO DE MENU
+            function addMenu(imagen, nombreCategoria, id) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        "<div onclick=\"irAMenus('" + nombreCategoria + "','" + imagen + "'," + id + ")" +
+                        "\"style=\"height:90px;\">" +
+                        "<img src=\"http://comander.es/Comander/archivos/ImagenesAdd/" + imagen +
+                        "\" class=\"w3-left\" style=\"width:90px;height:88px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 30px;" +
+                        "padding-left: 10px;margin-left: 100px;\"><div style=\"width:180px;\">" + nombreCategoria + "</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "</li>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARAR AÑADIR LA LISTA DE MENUS DISPONIBLES
+            function addMenus(nombreCategoria, precio, id) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        "<div onclick=\"detalleMenu('" + nombreCategoria + "','" + precio + "','" + id + "')\"" +
+                        "<div style=\"height:90px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 10px;" +
+                        "padding-left: 10px;margin-left: 10px;\"><div style=\"width:180px;\">" + nombreCategoria + "</div>" +
+                        "<div style=\"width:180px;padding-top:10px\">" + precio + "€</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "</div></div></li>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA AÑADIR LA CABECEERA DE LA LISTA DE MENU
+            function addCabeceraMenu(nombreCategoria, precio, id) {
+                var registro = "<li style=\"position:fixed; height: 50px;width:100%;padding:0px;margin-bottom: 1px;background-color:#b1b8e3\">" +
+                        "<div style=\"height:50px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 10px;" +
+                        "padding-left: 10px;margin-left: 10px;\"><a class=\"w3-left\">" + nombreCategoria + "</a><a class=\"w3-right\" style=\"margin-right:10px;\">" + precio + "€</a></div>" +
+                        "</div></li><br><br>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA AÑADIR LOS TIPOS DE SUBMENU
+            function addSubMenus(nombreCategoria, idSubcategoria, cantidad) {
+                var registro = "<li id=\"title_" + cantidad + "\" style=\"height: 30px;padding: 0px;margin-top: 1px;margin-bottom: 1px;background-color:#d8dcf1\">" +
+                        "<div style=\"height:30px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 1px;" +
+                        "padding-left: 10px;margin-left: 10px;\"><div style=\"width:180px;\">" + nombreCategoria + "</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "</div></li>";
+
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA AÑADIR LOS PRODUCTOS DE MENU
+            function addProductosSubmenu(nombreCategoria, idSubcategoria, imagen, descripcion, nutricional, alergenos, posicion) {
+                var registro = "<li style=\"height: 90px;padding: 0px;margin-top: 1px;margin-bottom: 1px;\">" +
+                        "<div onclick=\"detalleProductoMenu('" + nombreCategoria + "','" + imagen + "','" + descripcion + "','" + nutricional + "','" + alergenos + "')\"" +
+                        "<div style=\"height:90px;\">" +
+                        "<img src=\"http://comander.es/Comander/archivos/ImagenesAdd/" + imagen + 
+                        "\" class=\"w3-left\" style=\"width:90px;height:88px;\">" +
+                        " <div id=\"textoLista\" class=\"w3-medium letraBotones\" style=\"padding-top: 30px;" +
+                        "padding-left: 10px;margin-left: 100px;\"><div style=\"width:180px;\">" + nombreCategoria + "</div>" +
+                        "<div class=\"w3-small letraBotones\"></div>" +
+                        "</div></div></li>";
+
+                $("#listaProductosMenu_" + posicion).append(registro);
+            }
+
+//FUNCION PARA AÑADIR LISTA NUMERADA PARA RELLENAR LOS PRODUCTOS DE MENU
+            function addListaProductosMenu(cantidad) {
+                var registro = "<ul id=\"listaProductosMenu_" + cantidad + "\"  class=\"w3-ul w3-card-2 \" style=\"width:100%\"></ul>";
+                $("#listaProductos").append(registro);
+            }
+
+//FUNCION PARA REMARCAR EL DIA CON EL HORARIO EN NEGRITA
+            function remarcarDia() {
+                var now = new Date();
+                var dia = now.getDay();
+                $("#registro_" + dia).attr("style", "font-weight:bold");
+            }
+
+//FUNCION PARA AÑADIR PUNTUACION
+            function addPuntuacion(puntuacion, registro, cant_comentarios) {
+                var puntuacion = puntuacion;
+                var restante = 5 - puntuacion;
+                var estrellasAmarillas = "<a style=\"color:#d2be0e\">&#9733;</a>";
+                var estrellasNegras = "<a style=\"color:#bdbdc0\">&#9733;</a>";
+                var cant_comentarios = "<a class=\"letrabotones\" style=\"font-size: 11px;color:#888\">&nbsp;&nbsp;(" + cant_comentarios + ")</a>";
+                for (var i = 0; i < puntuacion; i++) {
+                    $("#puntuacion_" + registro).append(estrellasAmarillas);
+                }
+                for (var a = 0; a < restante; a++) {
+                    $("#puntuacion_" + registro).append(estrellasNegras);
+                }
+                $("#puntuacion_" + registro).append(cant_comentarios);
+            }
+
+//FUNCION PARA AÑADIR PUNTUACION DE COMENTARIOS DEL LOCAL
+            function addPuntuacionVisitantes(puntuacion, registro) {
+                var puntuacion = puntuacion / 2;
+                var restante = 5 - puntuacion;
+                var estrellasAmarillas = "<a style=\"color:#d2be0e\">&#9733;</a>";
+                var estrellasNegras = "<a style=\"color:#bdbdc0\">&#9733;</a>";
+                for (var i = 0; i < puntuacion; i++) {
+                    $("#puntos_" + registro).append(estrellasAmarillas);
+                }
+                for (var a = 0; a < restante; a++) {
+                    $("#puntos_" + registro).append(estrellasNegras);
+                }
+            }
+
+
+//FUNCION PARA RECUPERAR EL VALOR DEL RADIOBUTTON
+            function getRadio() {
+                var elem = document.getElementsByName('distancia');
+                for (i = 0; i < elem.length; i++)
+                    if (elem[i].checked) {
+                        valor = elem[i].value;
+                        return valor;
+                    }
+            }
+
+//FUNCION PARA ASIGNAR FILTRADO A VARIABLES
+            function getVars() {
+                this.distancia = getRadio();
+            }
+            
+//EJECUCION PARA RECARGAR SEGUN O FILTRADO
+            function filtrar(lat, lng, distance) {
+
+                var imagen;
+                var nombreEstablecimiento;
+                var latitud;
+                var longitud;
+                var cantidad = 0;
+                var puntuacion;
+                var cant_comentarios;
+                var direction;
+                var apertura;
+                var cierre;
+                var distancia;
+                var idEstablecimiento;
+
+                var data = {'lat': lat, 'lng': lng, 'distance': distance};
+                var ajax = $.ajax({
+                    type: "POST",
+                    data: data,
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/filtrarEstablecimientos.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    $("#lista").empty();
+                    document.getElementById('id1').style.display = 'none';
+                    if (data == 'vacio') {
+                        document.getElementById('sinCoincidencias').style.display = 'block';
+                    } else {
+                        $.each(data, function (id, establecimiento) {
+                            $.each(establecimiento, function () {
+
+                                imagen = establecimiento['imagen'];
+                                nombreEstablecimiento = establecimiento['nombre_establecimiento'];
+                                latitud = establecimiento['lat'];
+                                longitud = establecimiento['lng'];
+                                puntuacion = parseInt(establecimiento['puntuacion']);
+                                cant_comentarios = establecimiento['cant_comentarios'];
+                                direction = establecimiento['direction'];
+                                apertura = establecimiento['apertura'];
+                                cierre = establecimiento['cierre'];
+                                distancia = parseFloat(establecimiento['distance']);
+                                idEstablecimiento = establecimiento['id'];
+
+                            });
+                            cantidad++;
+                            $.preloadImages("http://comander.es/Comander/imagenes/establecimientos/" + imagen);
+                            addRegistro(imagen, nombreEstablecimiento, latitud, longitud, cantidad - 1, direction, apertura, cierre, idEstablecimiento);
+                            addPuntuacion(puntuacion, cantidad - 1, cant_comentarios);
+                            addDistancia(distancia, cantidad - 1);
+                            $("#cabecera").text(cantidad + " establecimientos");
+                            $("#cabecera").css("display", "block");
+                        });
+                    }
+                    $(".loading").fadeOut('fast');
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+//FUNION PARA RECUPERAR LAS IMAGENES DE TODOS LOS LOCALES
+            function imagenesEstablecimientos() {
+
+                var imagen;
+                var cantidad = 0;
+
+                var ajax = $.ajax({
+                    type: "POST",
+                    dataType: "jsonp",
+                    url: 'http://comander.es/Comander/Usuario/establecimientos.php',
+                    crossDomain: true,
+                    cache: false,
+                    timeout: 5000
+                });
+                ajax.done(function (data) {
+                    if (data == 'vacio') {
+                        document.getElementById('sinCoincidencias').style.display = 'block';
+                    } else {
+                        $.each(data, function (id, establecimiento) {
+                            $.each(establecimiento, function () {
+
+                                imagen = establecimiento['imagen'];
+                            });
+                            cantidad++;
+                            $.preloadImages("http://comander.es/Comander/imagenes/establecimientos/" + imagen);
+                            addImagesRestaurantes(imagen);
+                        });
+                    }
+                    carousel();
+                    geolocation();
+                });
+                ajax.fail(function (jqXHR, textStatus, errorThrown) {
+                    loading('ocultar');
+                    if (textStatus === "timeout") {
+                        document.getElementById('sinConexion').style.display = 'block';
+                    } else {
+                        toast("Ha sucedido un error intentalo de nuevo más tarde");
+                    }
+                });
+            }
+
+
+//FUNCTION PARA AÑADIR LA DISTANCIA EN LOS FILTRADOS
+            function addDistancia(distancia, registro) {
+                var distancia = distancia;
+                var unidad = "Kms";
+                if (distancia < 1) {
+                    distancia = distancia * 1000;
+                    unidad = "mts";
+                }
+                var addDistancia = "<a class=\"w3-right\" style=\"margin-right:5px\">" + distancia + " " + unidad + "</a>";
+                $("#horario_" + registro).append(addDistancia);
+            }
+
+//FUNCION PARA EMPEZAR
+            function inicio() {
+                loading('mostrar');
+                geolocation();
+            }
+
+//FUNCION PARA VOLVER A FILTRAR ESTABLECIMIENTOS
+            function reFiltrar() {
+                $("#iconoIzqHeader").attr("onclick", "reload()");
+                $("#panelSeleccion").css("display", "none");
+                $("#imagenEstablecimiento").css("display", "none");
+                $("#iconoDerecho").empty();
+                $("#iconoDerecho").append("<img src=\"img/tune.png\" alt=\"Norway\">");
+                comprobarLocalizacion();
+            }
+
+//FUNCION PARA IR A FILTRAR ESTABLECIMIENTOS
+            function goFiltrarEstablecimientos() {
+                getVars();
+                loading('mostrar');
+                geolocation();
+                comprobarLocalizacion();
+            }
+
+//FUNCION PARA RECUPERAR DIRECCION A PARTIR DE COORDENADAS
+            function recoveryDirection() {
+                var geocoder = new google.maps.Geocoder();
+                var yourLocation = new google.maps.LatLng(latitudActual, longitudActual);
+                geocoder.geocode(
+                        {'latLng': yourLocation},
+                        processGeocoder
+                        );
+            }
+
+            function processGeocoder(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    if (results[0]) {
+                        $("#autocomplete").val(results[0].formatted_address);
+                    } else {
+                        error('Google no retorno resultado alguno.');
+                    }
+                } else {
+                    error("Geocoding fallo debido a : " + status);
+                }
+            }
+
+//FUNCION GEOLOCALIZACION  
+            function geolocation() {
+                var position = navigator.geolocation.getCurrentPosition(onSuccessGeolocation, onErrorGeolocation, {enableHighAccuracy: true});
+                ubicacion = true;
+            }
+
+//FUNCION LOCALIZACION CORRECTA         
+            function onSuccessGeolocation(position) {
+                //loading('mostrar');
+                this.latitudActual = position.coords.latitude;
+                this.longitudActual = position.coords.longitude;
+                recoveryDirection();
+            }
+
+//FUNCION LOCALIZACION FALLIDA 
+            function onErrorGeolocation(error) {
+                document.getElementById('sinGPS').style.display = 'block';
+            }
+
+//FUNCION GEOLOCALIZACION EN TIEMPO REAL
+            function geolocationReal() {
+                var positionReal = navigator.geolocation.watchPosition(onSuccessGeolocationReal, onErrorGeolocationReal, {enableHighAccuracy: true});
+            }
+
+//FUNCION LOCALIZACION CORRECTA EN TIEMPO REAL       
+            function onSuccessGeolocationReal(position) {
+                this.latitudActual = position.coords.latitude;
+                this.longitudActual = position.coords.longitude;
+                determineZoom();
+                miPosicionActual();
+            }
+
+//FUNCION LOCALIZACION FALLIDA EN TIEMPO REAL
+            function onErrorGeolocationReal(error) {
+                document.getElementById('sinConexion').style.display = 'block';
+            }
+
+//FUNCION PARA MARCAR MI POSICION EN TIEMPO REAL EN EL MAPA
+            function miPosicionActual() {
+                if (typeof (this.yo) != "undefined") {
+                    delteMarker();
+                }
+                myLatLngActual = new google.maps.LatLng(latitudActual, longitudActual);
+                this.yo = new google.maps.Marker({
+                    position: myLatLngActual,
+                    icon: image
+                });
+                this.yo.setMap(mapa);
+            }
+
+//FUNCION PARA BORRAR EL MARCADOR DE POSICION
+            function delteMarker() {
+                this.yo.setMap(null);
+            }
+
+//FUNCION PARA MOSTRAR TOAST
+            function toast(text) {
+                $('.toast').text(text);
+                $('.toast').fadeIn(400).delay(2000).fadeOut(400);
+            }
+
+//RECARGA DE PAGINA
+            function principal() {
+                window.location.href = 'principal.html';
+            }
+
+//FUNCION PARA RECARGAR PAGINA
+            function reload() {
+                location.reload();
+            }
+
+//DETECTAMOS EL EVENTO CLICK
+            function onClick(evt) {
+            }
+
+//ESTABLECEMOS EL EVENTO DE DISPOSITIVO LISTO
+            document.addEventListener("deviceready", deviceReady, false);
+
+//DECLARAMOS LA FUNCION DEVICEREADY
+            function deviceReady() {
+            }
+//ESTABLECEMOS LAS FUNCIONES Y VARIABLES CUANDO ESTE LISTO EL DOCUMENTO            
+            $(document).ready(function () {
+                document.addEventListener("offline", onOffline, false);
+                document.addEventListener("online", onOnline, false);
+                document.addEventListener("backbutton", onBackKeyDown, false);
+                document.addEventListener("click", onClick, false);
+                $("#iconoIzqHeader").attr("onclick", "openLeftMenu()");
+                $(".loading").attr("style", "margin-top:20px;");
+                height = $(window).height();
+                width = $(window).width();
+                var marginTop = ((height - 129 - (((height - 45) / 100) * 37) * 2) / 3);
+                var styleTitulo = "width:25px;height: 40px;margin-left:" + ((width - 230) / 2) + "px;";
+                $("#titulo").attr("style", styleTitulo);
+                var header = $("#header").css("height");
+                $("#lista").fadeOut();
+                $("#sinConexion").attr("style", "height:" + height + "px;width:" + width + "px;");
+                var boton = "width:" + ((width / 100) * 90) + "px; height:" + (((height - 45) / 100) * 37)
+                        + "px;margin-left:" + ((width / 100) * 5) + "px;margin-top:" + marginTop
+                        + "px;";
+                var boton1 = "width:" + ((width / 100) * 90) + "px; height:" + ((((height - 45) / 100) * 37)+10)
+                        + "px;margin-left:" + ((width / 100) * 5) + "px;margin-top:" + marginTop
+                        + "px;";
+                var imagen = "width:" + ((width / 100) * 90) + "px; height:" + (((height - 40) / 100) * 37) + "px";
+                var heightFondo = (((height - 40) / 100) * 40) + "px";
+                var styleTitulo = "width:25px;height: 40px;margin-left:" + ((width - 230) / 2) + "px;";
+                var widthInput = "width:" + ((width / 100) * 60) + "px;height:27px; margin-bottom:1px;border: none;";
+                var styleLeftMenu = "display:none;height:" + (height - 125) + "px;";
+                $("#titulo").attr("style", styleTitulo);
+                $("#lista").fadeOut();
+                $("#sinConexion").attr("style", "height:" + height + "px;width:" + width + "px;");
+                $("#buton1").attr("style", boton1);
+                $("#buton2").attr("style", boton);
+                maxHeight = (((height - 40) / 100) * 30);
+                $("#escanear").attr("style", "height:" + maxHeight + "px;width:100%");
+                $("#autocomplete").attr("style", widthInput);
+                $("#leftMenu").attr("style", styleLeftMenu);
+                imagenesEstablecimientos();
+                cargarUsuario();
+
+            });
+
+//ESTABLECEMOS ESTA FUNCION PARA LA PRECARGA DE IMAGENES HAST QUE NO ESTE NO SE MUESTRA MAS QUE EL GIF CARGANDO            
+            $(window).load(function () {
+                while(!ubicacion){}
+                $("#loading").css("display", "none");
+                $("#contenido").css("display", "block");
+                
+            });
+
+//FUNCION PARA CONTROLAR EL BOTON DE ATRAS DEL DISPOSITIVO
+            function onBackKeyDown() {
+                if ($("#leftMenu").is(":visible")) {
+                    closeLeftMenu();
+                } else if ($("#rightMenu").is(":visible")) {
+                    closeRightMenu();
+                } else if ($('#contenido_1').is(":visible")) {
+                    window.location.href = 'index.html';
+                } else if ($("#contenido").is(":visible")) {
+                    if (varTiempo) {
+                        cerrarAplicacion();
+                    } else {
+                        varTiempo = 1;
+                        setTimeout("restablecerTiempo()", 2800);
+                        toast("Pulsa otra vez parar cerrar la aplicación");
+                    }
+                } else {
+                    $("#iconoIzqHeader").click();
+                }
+            }
+
+//FUNCION PARA MANEJAR EL EVENTO ONCLICK
+            function onClick() {
+                cerrarDiv();
+            }
+
+//FUNCION PARA CERRAR DIV AL CLICKAR EN EL BODY
+            function cerrarDiv() {
+                if ($("#leftMenu").is(":visible")) {
+                    switch (elementClicked) {
+                        case 'vacio':
+                        case 'iconoIzqHeader':
+                        case 'pedidoLeft':
+                        case 'pedidoPendienteLeft':
+                            break;
+                        default:
+                            closeLeftMenu();
+                    }
+
+                } else if ($("#rightMenu").is(":visible")) {
+                    switch (elementClicked) {
+                        case 'vacio':
+                        case 'iconoDerecho':
+                        case 'pedidoRight':
+                        case 'pedidoPendienteRight':
+                            break;
+                        default:
+                            closeRightMenu();
+                    }
+                }
+            }
+
+//FUNCION PARA CONTROLAR QUE ELEMENTO FUE PULSADO
+            function elementClick() {
+                var li = document.getElementById("body");
+                li.addEventListener("click", function (event) {
+                    elementClicked = event.target.id;
+                    if (elementClicked == '') {
+                        elementClicked = event.target.parentElement.id;
+                    }
+                });
+            }
+
+        </script>
+
+    </head> 
+    <body id="body" class="w3-light-grey" onclick="elementClick()">       
+        <div id="loading" class="loading"></div>
+        <div class="no-seleccionable">
+            <header id="header" class="w3-container w3-card-4 w3-theme header w3-top">                    
+                <h3 style="margin-top: 10px;">                    
+                    <i id="iconoIzqHeader" class=" w3-left">
+                        <img  src="img/menu.png" alt="Norway">
+                    </i>
+                    <img id="titulo" src="img/mano.png" class="w3-round-small w3-centered" alt="Norway">
+                    <a style="width: 120px;">Comander</a>
+                    <i id="iconoDerecho" class=" w3-right " onclick="document.getElementById('id1').style.display = 'block';">
+                        <img src="img/tune.png" alt="Norway">
+                    </i>
+                </h3>
+                <div id="locationField" class="div" style="background-color: #FFFFFF; margin-bottom:10px;border-color: gray;height:50px; text-align: center">
+                    <div id="interiorInput" style="height:26px;padding-top:10px;">
+                        <img id="buscar" style="width: 24px;height: 24px;margin-top: 2px;margin-left:2px;" src="img/buscar.png" onclick="clickInput()"/>
+                        <input style="width:77%;height:27px; margin-bottom:1px;border: none" id="autocomplete" placeholder="Restaurante, dirección, localidad..." type="text" />
+                        <img id="gps" style="width: 24px;height: 24px; margin-left:10px;" src="img/gps.png" onclick="geolocation()"/>
+                    </div>
+                </div>  
+            </header>
+            <nav class="w3-sidenav w3-animate-left w3-card-2 w3-white" style="display:none" id="leftMenu">
+                <div  onclick="closeLeftMenu()" class="w3-closenav w3-indigo w3-large">
+                    <a style="width:200px;">Panel Usuario&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&times;</a>
+                </div>
+                <a id="usuarioLeft" class="w3-padding-top" style="background-color: grey">
+                    <img id="userImgLeft" src=""/>
+                </a>
+                <div class="w3-padding-left w3-margin-top" onclick="clickPedidos(true)">
+                    <div id="pedidoLeft">
+                        <img src="img/pedidos.png"/>
+                        Historial pedidos
+                        <i class="fa fa-caret-down"></i>
+                    </div>
+                    <div id="misPedidosLeft" class="w3-dropdown-content w3-white w3-card-4"></div>
+                </div>
+                <div id="divMiPedidoPendienteLeft" class="w3-padding-left w3-margin-top" onclick="clickPedidosPendiente(true)" style="display: none">
+                    <div id="pedidoPendienteLeft">
+                        <img src="img/enCurso.png"/>
+                        Pedido pendiente
+                        <i class="fa fa-caret-down"></i>
+                    </div>
+                    <div id="miPedidoPendienteLeft" class="w3-dropdown-content w3-white w3-card-4"></div>
+                </div>
+                <a class="w3-margin-top" onclick="cerrarAplicacion()">
+                    <img src="img/cerrar.png"/>
+                    cerrar aplicación
+                </a>                
+            </nav>
+            <nav class="w3-sidenav w3-white w3-card-2 w3-animate-right" style="display:none;right:0;" id="rightMenu">
+                <div  onclick="closeRightMenu()" class="w3-closenav w3-indigo w3-large">
+                    <a style="width:200px;">&times;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Panel Usuario</a>
+                </div>
+                <a id="usuarioRight" class="w3-padding-top" style="background-color: grey">
+                    <img id="userImgRight" src=""/>
+                </a>
+                <div class="w3-padding-left w3-margin-top" onclick="clickPedidos(true)">
+                    <div id="pedidoRight">
+                        <img src="img/pedidos.png"/>
+                        Historial pedidos
+                        <i class="fa fa-caret-down"></i>
+                    </div>
+                    <div id="misPedidosRight" class="w3-dropdown-content w3-white w3-card-4"></div>
+                </div>
+                <div id="divMiPedidoPendienteRight" class="w3-padding-left w3-margin-top" onclick="clickPedidosPendiente(true)" style="display: none">
+                    <div id="pedidoPendienteRight">
+                        <img src="img/enCurso.png"/>
+                        Pedido pendiente
+                        <i class="fa fa-caret-down"></i>
+                    </div>
+                    <div id="miPedidoPendienteRight" class="w3-dropdown-content w3-white w3-card-4"></div>
+                </div>
+                <a class="w3-margin-top" onclick="cerrarAplicacion()">
+                    <img src="img/cerrar.png"/>
+                    cerrar aplicación
+                </a>
+            </nav>
+            <div id="contenido" style="margin-top: 124px!important;display:none">
+                <button id="buton2" class="w3-xlarge w3-card-8" style="color: gray;" onclick="comprobarLocalizacion()">
+                    <a class="w3-large letraBotones" style="color:gray;">VER RESTAURANTES</a>
+                </button>
+                <button id="buton1" class="w3-xlarge w3-card-8" onclick="window.location.href = 'entrar.html'">                    
+                    <a class="w3-large letraBotones" style="color:gray ">PEDIR EN RESTAURANTE</a>
+                    <img id="escanear" src="img/escanear.jpg" style="width:100%"/>
+                </button>
+                <footer class="w3-bottom w3-indigo" style="height: 5px;"></footer>
+            </div>
+            <div id="contenido_1" style="display: none">
+                <div id ="cabecera" class="w3-panel w3-theme-l5 w3-card-2 w3-border-top  w3-container w3-padding-4 w3-top" style="display:none;margin-top: 65px!important; margin-bottom: 0px!important;"></div>
+                <div style="overfoverlow: scroll">
+                    <ul id="lista" class="w3-ul w3-card-2" style="margin-top: 100px;"></ul>
+                </div>                
+            </div>
+            <div id="id1" class="w3-modal">
+                <div class="w3-container w3-section w3-light-grey">
+                    <span onclick="document.getElementById('id1').style.display = 'none';" class="w3-closebtn">&times;</span>
+                    <h3 class="letraBotones"><strong>Filtrar por distancia</strong></h3>
+                    <p>
+                        <input class="w3-radio" type="radio" name="distancia" value="1" checked>
+                        <label class="w3-validate">Menos de 1 Km</label></p>
+                    <p>
+                        <input class="w3-radio" type="radio" name="distancia" value="10">
+                        <label class="w3-validate">Menos de 10 Kms</label></p>
+                    <p>
+                        <input class="w3-radio" type="radio" name="distancia" value="1000">
+                        <label class="w3-validate">todos</label></p>
+                    <br>
+                    <button class="w3-btn-block w3-indigo" onclick="goFiltrarEstablecimientos()">Filtrar</button>
+                    <br><br>
+                </div>    
+            </div>
+            <div id="id07" class="w3-modal">
+                <div class="w3-modal-content w3-card-8 w3-round-medium w3-light-grey">
+                    <header class="w3-container w3-theme-l2"> 
+                        <span id="cierre" onclick="document.getElementById('id07').style.display = 'none';cerrarPanelPendientes();" class="w3-closebtn">&times;</span>
+                        <h5 id="tituloPedidoPendiente"></h5>
+                    </header>
+                    <div class="w3-container w3-margin-top w3-padding-0 w3-center">
+                        <div class="w3-center w3-margin-bottom w3-margin-top w3-padding-0">
+                            <div class="w3-row w3-theme-l4 w3-large w3-margin-top">
+                                <div style="width:20%;float: left;">Uds.</div>
+                                <div style="width:80%;padding-left: 25%;text-align: left;">Producto</div>  
+                            </div>
+                                <table id="tablaMenu" class="w3-table w3-border w3-margin-top w3-large  w3-bordered w3-striped w3-hoverable" style="display:none"></table>
+                           
+                            <img id="cargando" src="page-loader.gif" style="display: none; margin: 35% 35%">
+                        </div>
+                    </div>
+                </div>    
+            </div>
+            <div id="sinConexion" class="w3-modal w3-top">
+                <div class= "w3-container  w3-center w3-light-grey">
+                    <br><br><br><br>  
+                    <img src="img/alerta.jpg" width="128" height="128"><br>
+                    <br>
+                    <div class="w3-large w3-margin-top">
+                        SE HA PRODUCIDO UN ERROR AL CONECTAR CON EL SERVIDOR
+                        <br>
+                        COMPRUEBA LA CONEXION A INTERNET E INTENTELO DE NUEVO
+                    </div>
+                    <br><br><br> 
+                    <a class="w3-btn w3-white w3-border w3-round w3-card-4" style="width: 100%;" onclick="reload()">REINTENTAR</a>
+                </div> 
+            </div>
+            <div id="sinGPS" class="w3-modal w3-top">
+                <div class= "w3-container  w3-center w3-light-grey">
+                    <br><br><br><br>  
+                    <img src="img/alerta.jpg" width="128" height="128"><br>
+                    <br>
+                    <div class="w3-large w3-margin-top">
+                        Comander necesita conocer tu ubicación, introduce una dirección o pulsa el icono de GPS
+                    </div>
+                    <br><br><br> 
+                    <a class="w3-btn w3-white w3-border w3-round w3-card-4" style="width: 100%;" onclick="document.getElementById('sinGPS').style.display = 'none';
+                            reload()">ACEPTAR</a>
+                </div> 
+            </div>
+            <div id="sinCoincidencias" class="w3-modal">
+                <div class= "w3-container  w3-center w3-light-grey">
+                    <br><br><br><br>  
+                    <img src="img/alerta.jpg" width="128" height="128"><br>
+                    <br>
+                    <div class="w3-large w3-margin-top">
+                        NO SE HA ENCONTRADO ESTABLECIMIENTOS CON LOS PARAMETROS DE FILTRO ESTABLECIDOS
+                        <br>
+                        CAMBIA TUS FILTROS E INTENTELO DE NUEVO
+                    </div>
+                    <br><br><br> 
+                    <a class="w3-btn w3-white w3-border w3-round w3-card-4" style="width: 100%;" onclick="reload()">REINTENTAR</a>
+                </div> 
+            </div>
+            <div id="sinSesion" class="w3-modal">
+                <div class= "w3-container  w3-center w3-light-grey">
+                    <br><br><br><br>  
+                    <img src="img/alerta.jpg" width="128" height="128"><br>
+                    <br>
+                    <div class="w3-large w3-margin-top">
+                        NO HAS INICIADO SESIÓN TODAVÍA
+                        <br>
+                        PARA VER TUS PEDIDOS DEBES INICIAR SESIÓN
+                    </div>
+                    <br><br><br> 
+                    <a class="w3-btn w3-white w3-border w3-round w3-card-4" style="width: 100%;" onclick="document.getElementById('sinSesion').style.display = 'none'">ACEPTAR</a>
+                </div> 
+            </div>
+            <div class="toast" style="display: none"></div>
+            <div id="contenido_2" style="display:none;margin-top: 65px!important;display: none">
+                <div class="w3-content w3-animate-zoom"> 
+                    <img id="imagenEstablecimiento" style="height: 200px;width: 100%;margin-top:0px;">
+                    <div id="imagenMapa" style="height: 200px; width:100%;" onclick="clickEnMapa()"></div>
+                </div>
+                <div id="panelSeleccion" style="margin-top: 5px;position: fixed">
+                    <div id="elecciones">
+                        <div id="carta" class="w3-card-4 w3-left w3-center w3-padding-top w3-padding-bottom w3-small letraBotones" onclick="clickEnCarta()">CARTA</div>
+                        <div id="opiniones" class="w3-card-4 w3-left w3-center w3-padding-top w3-padding-bottom w3-small letraBotones" onclick="clickEnOpiniones()">OPINIONES</div>
+                        <div id="informacion" class="w3-card-4 w3-left w3-center w3-padding-top w3-padding-bottom w3-small letraBotones" onclick="clickEnInformacion()">INFORMACIÓN</div>                 
+                    </div>
+                    <div id="eleccionesProducto" style="display: none">
+                        <div id="productoDetalle" class="w3-card-4 w3-left w3-center w3-padding-top w3-padding-bottom w3-small letraBotones" onclick="clickEnProductoDetalle()">DETALLE</div>
+                        <div id="informacionProducto" class="w3-card-4 w3-left w3-center w3-padding-top w3-padding-bottom w3-small letraBotones" onclick="clickEnInformacionProducto()">INFORMACIÓN</div>                     
+                    </div>
+                    <div id="mapaCompleto"></div>
+                    <div id="scrollListaCategorias">
+                        <ul id="listaProductos" class="w3-ul w3-card-2" style="width:100%"></ul>
+                        <div id="descripcionProducto" class="letraBotones w3-padding-medium" style="display: none">
+                            <div id="tituloDescripcion" class="letraBotones w3-center w3-padding-medium w3-padding-top w3-large"></div>
+                            <div id="contenidoDetalle">
+                                <div id="contenidoDescripcionProducto" class="letraBotones w3-center w3-padding-medium"></div>
+                                <div id="precioProducto" class="letraBotones w3-center w3-padding-medium w3-xlarge"></div>
+                            </div>
+                            <div id="contenidoNutricional" class="letraBotones w3-padding-medium" style="display: none">
+                                <div id="etiquetaNutricional" class="letraBotones w3-padding-left w3-large">Información nutricional:</div> 
+                                <div id="informacionNutricional" class="letraBotones  w3-padding-medium w3-medium" style="font-weight: normal"></div>
+                                <div id="etiquetaAlergenos" class="letraBotones w3-padding-medium w3-large">Información alérgenos:</div> 
+                                <div id="informacionAlergenos" class="letraBotones w3-padding-medium w3-medium" style="font-weight: normal"></div>
+                            </div>
+                        </div>
+                        <img id="cargar" src="page-loader.gif" style="display: none; margin: 35% 35%">
+                    </div>
+                    <img id="back" src="page-loader.gif" style="display: none; margin: 35% 35%">
+                </div>
+            </div>
+        </div>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6RN6bDHcCwVqIarGvtBj5kHGng-MIW0k&libraries=places&callback=initAutocomplete" async defer></script>
+    </body>     
+</html>
